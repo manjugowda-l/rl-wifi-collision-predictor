@@ -1,0 +1,70 @@
+# ============================================================
+# NS-3 BUILD / GENERATED FILES
+# ============================================================
+
+build/
+
+.cache/
+.lock-ns3_linux_build
+
+# ============================================================
+# PYTHON VIRTUAL ENVIRONMENT
+# ============================================================
+
+rl-env/
+.venv/
+venv/
+env/
+
+# ============================================================
+# PYTHON CACHE / COMPILED FILES
+# ============================================================
+
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ============================================================
+# PYTHON TOOLING / LOCAL ENVIRONMENT
+# ============================================================
+
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.ipynb_checkpoints/
+
+# ============================================================
+# PROJECT GENERATED TRAINING DATA
+# ============================================================
+
+rl/data/*.csv
+
+# Generated simulation results
+wifi_ai_dcf_results.csv
+
+# Logs generated during experiments
+*.log
+
+# ============================================================
+# EXPERIMENTAL / MODEL OUTPUTS
+# ============================================================
+
+rl_final/
+rl/models/
+rl/logs/
+
+# Learned model / checkpoint files
+*.pkl
+*.ckpt
+*.torch
+*.pt
+*.pth
+
+# ============================================================
+# OS / EDITOR FILES
+# ============================================================
+
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

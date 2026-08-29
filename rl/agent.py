@@ -1,0 +1,614 @@
+import gymnasium as gym
+import ns3ai_gym_env
+import numpy as np
+import pickle
+import os
+import csv
+
+TARGET = "wifi-ai-dcf"
+
+# ============================================================
+# TRAINING SETTINGS
+# ============================================================
+
+SCENARIOS = range(1, 41)
+
+ALPHA = 0.10
+GAMMA = 0.95
+
+EPSILON_START = 1.0
+EPSILON_MIN = 0.05
+EPSILON_DECAY = 0.90
+
+MODEL_FILE = "rl/q_table.pkl"
+DATA_DIR = "rl/data"
+COMBINED_CSV = os.path.join(DATA_DIR, "all_training_data.csv")
+
+RL_INTERVAL = 0.1
+
+
+# ============================================================
+# STATE DISCRETIZATION
+# ============================================================
+
+def discretize_state(state):
+
+    queue_a = min(int(state[0]), 10)
+    queue_b = min(int(state[1]), 10)
+
+    growth_a = int(np.clip(state[2], -5, 5))
+    growth_b = int(np.clip(state[3], -5, 5))
+
+    packet_loss = int(state[4] > 0)
+    mac_failures = int(state[5] > 0)
+
+    cw = int(state[6])
+
+    if cw <= 3:
+        cw_bin = 3
+    elif cw <= 7:
+        cw_bin = 7
+    elif cw <= 15:
+        cw_bin = 15
+    elif cw <= 31:
+        cw_bin = 31
+    elif cw <= 63:
+        cw_bin = 63
+    elif cw <= 127:
+        cw_bin = 127
+    elif cw <= 255:
+        cw_bin = 255
+    else:
+        cw_bin = 1023
+
+    return (
+        queue_a,
+        queue_b,
+        growth_a,
+        growth_b,
+        packet_loss,
+        mac_failures,
+        cw_bin,
+    )
+
+
+# ============================================================
+# Q-TABLE
+# ============================================================
+
+# ============================================================
+# Q-TABLE
+# ============================================================
+
+if os.path.exists(MODEL_FILE):
+
+    print(
+        f"[LOAD] Existing Q-table found: {MODEL_FILE}"
+    )
+
+    with open(
+        MODEL_FILE,
+        "rb"
+    ) as f:
+
+        q_table = pickle.load(f)
+
+    print(
+        f"[LOAD] Q-states: {len(q_table)}"
+    )
+
+else:
+
+    q_table = {}
+
+    print(
+        "[LOAD] No existing Q-table. Starting fresh."
+    )
+
+
+def get_q_values(state):
+
+    if state not in q_table:
+
+        q_table[state] = np.zeros(
+            3,
+            dtype=np.float32
+        )
+
+    return q_table[state]
+
+# ============================================================
+# ACTION
+#
+# 0 = decrease CW
+# 1 = keep CW
+# 2 = increase CW
+# ============================================================
+
+def choose_action(state, epsilon):
+
+    if np.random.random() < epsilon:
+        return np.random.randint(0, 3)
+
+    q_values = get_q_values(state)
+
+    return int(np.argmax(q_values))
+
+
+# ============================================================
+# CSV HEADER
+# ============================================================
+
+CSV_HEADER = [
+    "scenario",
+    "run",
+    "episode",
+    "step",
+    "simulation_time",
+
+    "queueA",
+    "queueB",
+    "queueGrowthA",
+    "queueGrowthB",
+    "packetLoss",
+    "macFailures",
+    "currentCW",
+
+    "action",
+    "cwBefore",
+    "cwAfter",
+
+    "reward",
+
+    "nextQueueA",
+    "nextQueueB",
+    "nextQueueGrowthA",
+    "nextQueueGrowthB",
+    "nextPacketLoss",
+    "nextMacFailures",
+    "nextCW",
+
+    "epsilon",
+
+    "qBefore",
+    "qAfter"
+]
+
+
+# ============================================================
+# PREPARE DATA DIRECTORY
+# ============================================================
+
+os.makedirs(DATA_DIR, exist_ok=True)
+
+
+# ============================================================
+# TRAINING
+# ============================================================
+
+print("==================================================")
+print("          WIFI AI DCF - 40 SCENARIO Q-LEARNING")
+print("==================================================")
+print(f"Scenarios       : 1 - 40")
+print(f"RL interval     : {RL_INTERVAL} s")
+print(f"Alpha           : {ALPHA}")
+print(f"Gamma           : {GAMMA}")
+print(f"Initial epsilon : {EPSILON_START}")
+print(f"Minimum epsilon : {EPSILON_MIN}")
+print("==================================================")
+
+
+epsilon = EPSILON_START
+
+total_transitions = 0
+total_scenarios_completed = 0
+
+combined_file = open(
+    COMBINED_CSV,
+    "w",
+    newline=""
+)
+
+combined_writer = csv.writer(combined_file)
+combined_writer.writerow(CSV_HEADER)
+
+
+try:
+
+    # ========================================================
+    # SCENARIO LOOP
+    # ========================================================
+
+    for scenario in SCENARIOS:
+
+        run_number = scenario
+
+        csv_file_path = os.path.join(
+            DATA_DIR,
+            f"scenario{scenario:02d}_training.csv"
+        )
+
+        print()
+        print("==================================================")
+        print(f"STARTING SCENARIO {scenario}/40")
+        print(f"Random run      : {run_number}")
+        print(f"CSV             : {csv_file_path}")
+        print("==================================================")
+
+        # ----------------------------------------------------
+        # Open scenario-specific CSV
+        # ----------------------------------------------------
+
+        scenario_file = open(
+            csv_file_path,
+            "w",
+            newline=""
+        )
+
+        scenario_writer = csv.writer(scenario_file)
+        scenario_writer.writerow(CSV_HEADER)
+
+        env = None
+
+        try:
+
+            # ------------------------------------------------
+            # CREATE NS-3 GYM ENVIRONMENT
+            # ------------------------------------------------
+
+            print(
+                "[PYTHON] Creating ns-3 Gym environment...",
+                flush=True
+            )
+
+            env = gym.make(
+                "ns3ai_gym_env/Ns3-v0",
+                targetName=TARGET,
+                ns3Path="./",
+                ns3Settings={
+                    "scenario": scenario,
+                    "run": run_number,
+                },
+                debug=False,
+            )
+
+            print(
+                "[PYTHON] Gym environment created.",
+                flush=True
+            )
+
+            print(
+                "Observation space:",
+                env.observation_space
+            )
+
+            print(
+                "Action space:",
+                env.action_space
+            )
+
+            # ------------------------------------------------
+            # ONE EPISODE PER SCENARIO
+            # ------------------------------------------------
+
+            obs, info = env.reset()
+
+            raw_state = np.asarray(
+                obs,
+                dtype=np.float32
+            )
+
+            state = discretize_state(raw_state)
+
+            total_reward = 0.0
+            steps = 0
+
+            while True:
+
+                # ============================================
+                # STATE BEFORE ACTION
+                # ============================================
+
+                current_raw_state = raw_state.copy()
+
+                cw_before = int(
+                    current_raw_state[6]
+                )
+
+                # ============================================
+                # CHOOSE ACTION
+                # ============================================
+
+                action_value = choose_action(
+                    state,
+                    epsilon
+                )
+
+                action = np.asarray(
+                    [action_value],
+                    dtype=np.int32
+                )
+
+                # ============================================
+                # EXECUTE ACTION IN NS-3
+                # ============================================
+
+                (
+                    next_obs,
+                    reward,
+                    terminated,
+                    truncated,
+                    info
+                ) = env.step(action)
+
+                next_raw_state = np.asarray(
+                    next_obs,
+                    dtype=np.float32
+                )
+
+                next_state = discretize_state(
+                    next_raw_state
+                )
+
+                reward = float(reward)
+
+                cw_after = int(
+                    next_raw_state[6]
+                )
+
+                # ============================================
+                # Q-LEARNING UPDATE
+                # ============================================
+
+                current_q = get_q_values(state)
+
+                next_q = get_q_values(next_state)
+
+                q_before = float(
+                    current_q[action_value]
+                )
+
+                best_next_q = float(
+                    np.max(next_q)
+                )
+
+                target = (
+                    reward
+                    + GAMMA * best_next_q
+                )
+
+                current_q[action_value] += ALPHA * (
+                    target
+                    - current_q[action_value]
+                )
+
+                q_after = float(
+                    current_q[action_value]
+                )
+
+                # ============================================
+                # SIMULATION TIME
+                # ============================================
+
+                simulation_time = (
+                    steps * RL_INTERVAL
+                )
+
+                # ============================================
+                # TRANSITION ROW
+                # ============================================
+
+                row = [
+
+                    scenario,
+                    run_number,
+                    1,
+                    steps + 1,
+                    f"{simulation_time:.3f}",
+
+                    current_raw_state[0],
+                    current_raw_state[1],
+                    current_raw_state[2],
+                    current_raw_state[3],
+                    current_raw_state[4],
+                    current_raw_state[5],
+                    cw_before,
+
+                    action_value,
+                    cw_before,
+                    cw_after,
+
+                    reward,
+
+                    next_raw_state[0],
+                    next_raw_state[1],
+                    next_raw_state[2],
+                    next_raw_state[3],
+                    next_raw_state[4],
+                    next_raw_state[5],
+                    int(next_raw_state[6]),
+
+                    epsilon,
+
+                    q_before,
+                    q_after
+                ]
+
+                # ============================================
+                # SAVE TO SCENARIO CSV
+                # ============================================
+
+                scenario_writer.writerow(row)
+
+                # ============================================
+                # SAVE TO COMBINED CSV
+                # ============================================
+
+                combined_writer.writerow(row)
+
+                # Make sure data is physically flushed
+                scenario_file.flush()
+                combined_file.flush()
+
+                # ============================================
+                # MOVE TO NEXT STATE
+                # ============================================
+
+                state = next_state
+                raw_state = next_raw_state
+
+                total_reward += reward
+                steps += 1
+
+                total_transitions += 1
+
+                # ============================================
+                # END OF EPISODE
+                # ============================================
+
+                if terminated or truncated:
+                    break
+
+            # ------------------------------------------------
+            # END OF SCENARIO
+            # ------------------------------------------------
+
+            epsilon = max(
+                EPSILON_MIN,
+                epsilon * EPSILON_DECAY
+            )
+
+            total_scenarios_completed += 1
+
+            print()
+            print("----------------------------------------")
+            
+            print(f"SCENARIO {scenario} COMPLETE")
+            print(f"Steps       : {steps}")
+            print(f"Transitions : {steps}")
+            print(f"Total reward: {total_reward:.4f}")
+            print(f"Epsilon     : {epsilon:.4f}")
+            print(f"Q-states    : {len(q_table)}")
+            print("----------------------------------------")
+                        # ============================================
+            # SAVE Q-TABLE CHECKPOINT
+            # ============================================
+
+            os.makedirs(
+                os.path.dirname(MODEL_FILE),
+                exist_ok=True
+            )
+
+            with open(
+                MODEL_FILE,
+                "wb"
+            ) as f:
+
+                pickle.dump(
+                    q_table,
+                    f
+                )
+
+            print(
+                f"[CHECKPOINT] Q-table saved after "
+                f"scenario {scenario}"
+            )
+
+            print(
+                f"[CHECKPOINT] Q-states: "
+                f"{len(q_table)}"
+            )
+        finally:
+
+            # ------------------------------------------------
+            # CLOSE ENVIRONMENT
+            # ------------------------------------------------
+
+            if env is not None:
+                try:
+                    env.close()
+                except Exception as e:
+                    print(
+                        f"[WARNING] Environment close: {e}"
+                    )
+
+            scenario_file.close()
+
+            print(
+                f"[SAVED] {csv_file_path}"
+            )
+
+
+finally:
+
+    # ========================================================
+    # CLOSE COMBINED CSV
+    # ========================================================
+
+    combined_file.close()
+
+    # ========================================================
+    # SAVE FINAL Q-TABLE
+    # ========================================================
+
+    os.makedirs(
+        os.path.dirname(MODEL_FILE),
+        exist_ok=True
+    )
+
+    with open(
+        MODEL_FILE,
+        "wb"
+    ) as f:
+
+        pickle.dump(
+            q_table,
+            f
+        )
+
+    # ========================================================
+    # FINAL SUMMARY
+    # ========================================================
+
+    print()
+    print("==================================================")
+    print("             TRAINING FINISHED")
+    print("==================================================")
+    print(
+        f"Scenarios completed : "
+        f"{total_scenarios_completed}/40"
+    )
+    print(
+        f"Total transitions   : "
+        f"{total_transitions}"
+    )
+    print(
+        f"Learned Q-states    : "
+        f"{len(q_table)}"
+    )
+    print(
+        f"Final epsilon       : "
+        f"{epsilon:.4f}"
+    )
+    print()
+    print(
+        f"Q-table saved to    : "
+        f"{MODEL_FILE}"
+    )
+    print(
+        f"Combined CSV        : "
+        f"{COMBINED_CSV}"
+    )
+    print()
+    print("Individual CSV files:")
+    print(
+        f"  {DATA_DIR}/scenario01_training.csv"
+    )
+    print(
+        f"  {DATA_DIR}/scenario02_training.csv"
+    )
+    print("  ...")
+    print(
+        f"  {DATA_DIR}/scenario40_training.csv"
+    )
+    print("==================================================")
