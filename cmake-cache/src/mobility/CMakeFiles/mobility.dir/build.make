@@ -412,6 +412,7 @@ mobility_EXTERNAL_OBJECTS =
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-mobility-default.so: src/mobility/CMakeFiles/mobility.dir/model/waypoint-mobility-model.cc.o
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-mobility-default.so: src/mobility/CMakeFiles/mobility.dir/model/waypoint.cc.o
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-mobility-default.so: src/mobility/CMakeFiles/mobility.dir/build.make
+/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-mobility-default.so: /usr/lib/x86_64-linux-gnu/libsqlite3.so
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-mobility-default.so: src/mobility/CMakeFiles/mobility.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_22) "Linking CXX shared library \"/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-mobility-default.so\""
 	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/src/mobility" && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/mobility.dir/link.txt --verbose=$(VERBOSE)

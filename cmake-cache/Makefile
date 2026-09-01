@@ -904,6 +904,19 @@ uninstall_pkgconfig_sip/fast:
 .PHONY : uninstall_pkgconfig_sip/fast
 
 #=============================================================================
+# Target rules for targets named uninstall_pkgconfig_oran
+
+# Build rule for target.
+uninstall_pkgconfig_oran: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 uninstall_pkgconfig_oran
+.PHONY : uninstall_pkgconfig_oran
+
+# fast build rule for target.
+uninstall_pkgconfig_oran/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/uninstall_pkgconfig_oran.dir/build.make CMakeFiles/uninstall_pkgconfig_oran.dir/build
+.PHONY : uninstall_pkgconfig_oran/fast
+
+#=============================================================================
 # Target rules for targets named uninstall_pkgconfig_nr
 
 # Build rule for target.
@@ -1123,6 +1136,19 @@ nr-print-introspected-doxygen: cmake_check_build_system
 nr-print-introspected-doxygen/fast:
 	$(MAKE) $(MAKESILENT) -f contrib/nr/CMakeFiles/nr-print-introspected-doxygen.dir/build.make contrib/nr/CMakeFiles/nr-print-introspected-doxygen.dir/build
 .PHONY : nr-print-introspected-doxygen/fast
+
+#=============================================================================
+# Target rules for targets named oran
+
+# Build rule for target.
+oran: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 oran
+.PHONY : oran
+
+# fast build rule for target.
+oran/fast:
+	$(MAKE) $(MAKESILENT) -f contrib/oran/CMakeFiles/oran.dir/build.make contrib/oran/CMakeFiles/oran.dir/build
+.PHONY : oran/fast
 
 #=============================================================================
 # Target rules for targets named sip
@@ -1749,32 +1775,6 @@ zigbee/fast:
 .PHONY : zigbee/fast
 
 #=============================================================================
-# Target rules for targets named scratch_scratch-simulator
-
-# Build rule for target.
-scratch_scratch-simulator: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 scratch_scratch-simulator
-.PHONY : scratch_scratch-simulator
-
-# fast build rule for target.
-scratch_scratch-simulator/fast:
-	$(MAKE) $(MAKESILENT) -f scratch/CMakeFiles/scratch_scratch-simulator.dir/build.make scratch/CMakeFiles/scratch_scratch-simulator.dir/build
-.PHONY : scratch_scratch-simulator/fast
-
-#=============================================================================
-# Target rules for targets named scratch_wifi-ai-dcf-original-backup
-
-# Build rule for target.
-scratch_wifi-ai-dcf-original-backup: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 scratch_wifi-ai-dcf-original-backup
-.PHONY : scratch_wifi-ai-dcf-original-backup
-
-# fast build rule for target.
-scratch_wifi-ai-dcf-original-backup/fast:
-	$(MAKE) $(MAKESILENT) -f scratch/CMakeFiles/scratch_wifi-ai-dcf-original-backup.dir/build.make scratch/CMakeFiles/scratch_wifi-ai-dcf-original-backup.dir/build
-.PHONY : scratch_wifi-ai-dcf-original-backup/fast
-
-#=============================================================================
 # Target rules for targets named scratch_wifi-ai-dcf
 
 # Build rule for target.
@@ -1961,6 +1961,7 @@ help:
 	@echo "... uninstall_pkgconfig_nix-vector-routing"
 	@echo "... uninstall_pkgconfig_nr"
 	@echo "... uninstall_pkgconfig_olsr"
+	@echo "... uninstall_pkgconfig_oran"
 	@echo "... uninstall_pkgconfig_point-to-point"
 	@echo "... uninstall_pkgconfig_point-to-point-layout"
 	@echo "... uninstall_pkgconfig_propagation"
@@ -2018,6 +2019,7 @@ help:
 	@echo "... nr-print-introspected-doxygen"
 	@echo "... ns3ai_gym_msg_py"
 	@echo "... olsr"
+	@echo "... oran"
 	@echo "... perf-io"
 	@echo "... point-to-point"
 	@echo "... point-to-point-layout"
@@ -2027,10 +2029,8 @@ help:
 	@echo "... raw-sock-creator"
 	@echo "... scratch-nested-subdir-lib"
 	@echo "... scratch_nested-subdir_scratch-nested-subdir-executable"
-	@echo "... scratch_scratch-simulator"
 	@echo "... scratch_subdir_scratch-subdir"
 	@echo "... scratch_wifi-ai-dcf"
-	@echo "... scratch_wifi-ai-dcf-original-backup"
 	@echo "... scratch_wifi-baseline"
 	@echo "... scratch_wifi-edca"
 	@echo "... sip"

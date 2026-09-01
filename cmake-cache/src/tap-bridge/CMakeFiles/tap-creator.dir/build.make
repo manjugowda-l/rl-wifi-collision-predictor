@@ -108,6 +108,7 @@ tap__creator_EXTERNAL_OBJECTS =
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/src/tap-bridge/ns3.46.1-tap-creator-default: src/tap-bridge/CMakeFiles/tap-creator.dir/model/tap-creator.cc.o
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/src/tap-bridge/ns3.46.1-tap-creator-default: src/tap-bridge/CMakeFiles/tap-creator.dir/model/tap-encode-decode.cc.o
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/src/tap-bridge/ns3.46.1-tap-creator-default: src/tap-bridge/CMakeFiles/tap-creator.dir/build.make
+/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/src/tap-bridge/ns3.46.1-tap-creator-default: /usr/lib/x86_64-linux-gnu/libsqlite3.so
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/src/tap-bridge/ns3.46.1-tap-creator-default: src/tap-bridge/CMakeFiles/tap-creator.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX executable \"/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/src/tap-bridge/ns3.46.1-tap-creator-default\""
 	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/src/tap-bridge" && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/tap-creator.dir/link.txt --verbose=$(VERBOSE)

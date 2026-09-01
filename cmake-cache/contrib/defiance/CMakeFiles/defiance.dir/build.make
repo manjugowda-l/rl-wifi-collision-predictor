@@ -317,6 +317,7 @@ defiance_EXTERNAL_OBJECTS =
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-defiance-default.so: contrib/defiance/CMakeFiles/defiance.dir/helper/rl-application-helper.cc.o
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-defiance-default.so: contrib/defiance/CMakeFiles/defiance.dir/build.make
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-defiance-default.so: /usr/lib/x86_64-linux-gnu/libprotobuf.so
+/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-defiance-default.so: /usr/lib/x86_64-linux-gnu/libsqlite3.so
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-defiance-default.so: contrib/defiance/CMakeFiles/defiance.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_16) "Linking CXX shared library \"/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-defiance-default.so\""
 	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/contrib/defiance" && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/defiance.dir/link.txt --verbose=$(VERBOSE)

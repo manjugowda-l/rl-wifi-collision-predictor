@@ -124,6 +124,7 @@ sixlowpan_EXTERNAL_OBJECTS =
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-sixlowpan-default.so: src/sixlowpan/CMakeFiles/sixlowpan.dir/model/sixlowpan-header.cc.o
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-sixlowpan-default.so: src/sixlowpan/CMakeFiles/sixlowpan.dir/model/sixlowpan-net-device.cc.o
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-sixlowpan-default.so: src/sixlowpan/CMakeFiles/sixlowpan.dir/build.make
+/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-sixlowpan-default.so: /usr/lib/x86_64-linux-gnu/libsqlite3.so
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-sixlowpan-default.so: src/sixlowpan/CMakeFiles/sixlowpan.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_4) "Linking CXX shared library \"/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-sixlowpan-default.so\""
 	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/src/sixlowpan" && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/sixlowpan.dir/link.txt --verbose=$(VERBOSE)

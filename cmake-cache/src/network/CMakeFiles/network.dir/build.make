@@ -1212,6 +1212,7 @@ network_EXTERNAL_OBJECTS =
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-network-default.so: src/network/CMakeFiles/network.dir/utils/sll-header.cc.o
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-network-default.so: src/network/CMakeFiles/network.dir/utils/timestamp-tag.cc.o
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-network-default.so: src/network/CMakeFiles/network.dir/build.make
+/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-network-default.so: /usr/lib/x86_64-linux-gnu/libsqlite3.so
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-network-default.so: src/network/CMakeFiles/network.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_72) "Linking CXX shared library \"/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-network-default.so\""
 	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/src/network" && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/network.dir/link.txt --verbose=$(VERBOSE)

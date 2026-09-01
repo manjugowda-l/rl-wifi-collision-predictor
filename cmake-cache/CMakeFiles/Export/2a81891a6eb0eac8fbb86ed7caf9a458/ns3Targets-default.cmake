@@ -75,6 +75,16 @@ set_target_properties(ns3::nr PROPERTIES
 list(APPEND _cmake_import_check_targets ns3::nr )
 list(APPEND _cmake_import_check_files_for_ns3::nr "${_IMPORT_PREFIX}/lib/libns3.46.1-nr-default.so" )
 
+# Import target "ns3::oran" for configuration "default"
+set_property(TARGET ns3::oran APPEND PROPERTY IMPORTED_CONFIGURATIONS DEFAULT)
+set_target_properties(ns3::oran PROPERTIES
+  IMPORTED_LOCATION_DEFAULT "${_IMPORT_PREFIX}/lib/libns3.46.1-oran-default.so"
+  IMPORTED_SONAME_DEFAULT "libns3.46.1-oran-default.so"
+  )
+
+list(APPEND _cmake_import_check_targets ns3::oran )
+list(APPEND _cmake_import_check_files_for_ns3::oran "${_IMPORT_PREFIX}/lib/libns3.46.1-oran-default.so" )
+
 # Import target "ns3::sip" for configuration "default"
 set_property(TARGET ns3::sip APPEND PROPERTY IMPORTED_CONFIGURATIONS DEFAULT)
 set_target_properties(ns3::sip PROPERTIES

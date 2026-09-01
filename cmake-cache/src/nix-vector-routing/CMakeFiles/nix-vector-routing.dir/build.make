@@ -108,6 +108,7 @@ nix__vector__routing_EXTERNAL_OBJECTS =
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-nix-vector-routing-default.so: src/nix-vector-routing/CMakeFiles/nix-vector-routing.dir/helper/nix-vector-helper.cc.o
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-nix-vector-routing-default.so: src/nix-vector-routing/CMakeFiles/nix-vector-routing.dir/model/nix-vector-routing.cc.o
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-nix-vector-routing-default.so: src/nix-vector-routing/CMakeFiles/nix-vector-routing.dir/build.make
+/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-nix-vector-routing-default.so: /usr/lib/x86_64-linux-gnu/libsqlite3.so
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-nix-vector-routing-default.so: src/nix-vector-routing/CMakeFiles/nix-vector-routing.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_3) "Linking CXX shared library \"/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-nix-vector-routing-default.so\""
 	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/src/nix-vector-routing" && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/nix-vector-routing.dir/link.txt --verbose=$(VERBOSE)

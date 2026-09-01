@@ -42,3 +42,68 @@ if(NOT DEFINED CMAKE_OBJDUMP)
   set(CMAKE_OBJDUMP "/usr/bin/objdump")
 endif()
 
+if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
+  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libns3.46.1-oran-default.so" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libns3.46.1-oran-default.so")
+    file(RPATH_CHECK
+         FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libns3.46.1-oran-default.so"
+         RPATH "/usr/local/lib:\$ORIGIN/:\$ORIGIN/../lib:/usr/local/lib64:\$ORIGIN/:\$ORIGIN/../lib64")
+  endif()
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/lib" TYPE SHARED_LIBRARY FILES "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib/libns3.46.1-oran-default.so")
+  if(EXISTS "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libns3.46.1-oran-default.so" AND
+     NOT IS_SYMLINK "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libns3.46.1-oran-default.so")
+    file(RPATH_CHANGE
+         FILE "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libns3.46.1-oran-default.so"
+         OLD_RPATH "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/lib::::::::::::"
+         NEW_RPATH "/usr/local/lib:\$ORIGIN/:\$ORIGIN/../lib:/usr/local/lib64:\$ORIGIN/:\$ORIGIN/../lib64")
+    if(CMAKE_INSTALL_DO_STRIP)
+      execute_process(COMMAND "/usr/bin/strip" "$ENV{DESTDIR}${CMAKE_INSTALL_PREFIX}/lib/libns3.46.1-oran-default.so")
+    endif()
+  endif()
+endif()
+
+if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
+endif()
+
+if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/ns3" TYPE FILE FILES
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-near-rt-ric.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-lm.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-lm-noop.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-lm-lte-2-lte-distance-handover.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-lm-lte-2-lte-rsrp-handover.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-cmm.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-cmm-handover.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-cmm-noop.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-cmm-single-command-per-node.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-command.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-command-lte-2-lte-handover.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-report.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-report-apploss.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-report-lte-ue-rsrp-rsrq.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-report-location.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-report-lte-ue-cell-info.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-reporter.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-reporter-apploss.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-reporter-lte-ue-rsrp-rsrq.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-reporter-location.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-reporter-lte-ue-cell-info.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-data-repository.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-data-repository-sqlite.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-near-rt-ric-e2terminator.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-e2-node-terminator.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-e2-node-terminator-wired.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-e2-node-terminator-lte-enb.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-e2-node-terminator-lte-ue.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-e2-node-terminator-container.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-report-trigger.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-report-trigger-periodic.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-report-trigger-lte-ue-handover.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-report-trigger-location-change.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-query-trigger.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/model/oran-query-trigger-custom.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/oran/helper/oran-helper.h"
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/include/ns3/oran-module.h"
+    )
+endif()
+

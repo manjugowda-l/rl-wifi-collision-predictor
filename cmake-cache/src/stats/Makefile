@@ -560,6 +560,54 @@ model/probe.cc.s:
 	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f src/stats/CMakeFiles/stats.dir/build.make src/stats/CMakeFiles/stats.dir/model/probe.cc.s
 .PHONY : model/probe.cc.s
 
+model/sqlite-data-output.o: model/sqlite-data-output.cc.o
+.PHONY : model/sqlite-data-output.o
+
+# target to build an object file
+model/sqlite-data-output.cc.o:
+	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f src/stats/CMakeFiles/stats.dir/build.make src/stats/CMakeFiles/stats.dir/model/sqlite-data-output.cc.o
+.PHONY : model/sqlite-data-output.cc.o
+
+model/sqlite-data-output.i: model/sqlite-data-output.cc.i
+.PHONY : model/sqlite-data-output.i
+
+# target to preprocess a source file
+model/sqlite-data-output.cc.i:
+	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f src/stats/CMakeFiles/stats.dir/build.make src/stats/CMakeFiles/stats.dir/model/sqlite-data-output.cc.i
+.PHONY : model/sqlite-data-output.cc.i
+
+model/sqlite-data-output.s: model/sqlite-data-output.cc.s
+.PHONY : model/sqlite-data-output.s
+
+# target to generate assembly for a file
+model/sqlite-data-output.cc.s:
+	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f src/stats/CMakeFiles/stats.dir/build.make src/stats/CMakeFiles/stats.dir/model/sqlite-data-output.cc.s
+.PHONY : model/sqlite-data-output.cc.s
+
+model/sqlite-output.o: model/sqlite-output.cc.o
+.PHONY : model/sqlite-output.o
+
+# target to build an object file
+model/sqlite-output.cc.o:
+	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f src/stats/CMakeFiles/stats.dir/build.make src/stats/CMakeFiles/stats.dir/model/sqlite-output.cc.o
+.PHONY : model/sqlite-output.cc.o
+
+model/sqlite-output.i: model/sqlite-output.cc.i
+.PHONY : model/sqlite-output.i
+
+# target to preprocess a source file
+model/sqlite-output.cc.i:
+	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f src/stats/CMakeFiles/stats.dir/build.make src/stats/CMakeFiles/stats.dir/model/sqlite-output.cc.i
+.PHONY : model/sqlite-output.cc.i
+
+model/sqlite-output.s: model/sqlite-output.cc.s
+.PHONY : model/sqlite-output.s
+
+# target to generate assembly for a file
+model/sqlite-output.cc.s:
+	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f src/stats/CMakeFiles/stats.dir/build.make src/stats/CMakeFiles/stats.dir/model/sqlite-output.cc.s
+.PHONY : model/sqlite-output.cc.s
+
 model/time-data-calculators.o: model/time-data-calculators.cc.o
 .PHONY : model/time-data-calculators.o
 
@@ -765,6 +813,12 @@ help:
 	@echo "... model/probe.o"
 	@echo "... model/probe.i"
 	@echo "... model/probe.s"
+	@echo "... model/sqlite-data-output.o"
+	@echo "... model/sqlite-data-output.i"
+	@echo "... model/sqlite-data-output.s"
+	@echo "... model/sqlite-output.o"
+	@echo "... model/sqlite-output.i"
+	@echo "... model/sqlite-output.s"
 	@echo "... model/time-data-calculators.o"
 	@echo "... model/time-data-calculators.i"
 	@echo "... model/time-data-calculators.s"

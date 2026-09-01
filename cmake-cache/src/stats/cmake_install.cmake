@@ -66,7 +66,12 @@ if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT
 endif()
 
 if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
+  file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/ns3" TYPE FILE FILES "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/stats/model/sqlite-output.h")
+endif()
+
+if(CMAKE_INSTALL_COMPONENT STREQUAL "Unspecified" OR NOT CMAKE_INSTALL_COMPONENT)
   file(INSTALL DESTINATION "${CMAKE_INSTALL_PREFIX}/include/ns3" TYPE FILE FILES
+    "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/stats/model/sqlite-data-output.h"
     "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/stats/helper/file-helper.h"
     "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/stats/helper/gnuplot-helper.h"
     "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/stats/model/average.h"

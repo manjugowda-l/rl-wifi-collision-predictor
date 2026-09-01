@@ -163,34 +163,6 @@ depend:
 .PHONY : depend
 
 # Convenience name for target.
-scratch/CMakeFiles/scratch_scratch-simulator.dir/rule:
-	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 scratch/CMakeFiles/scratch_scratch-simulator.dir/rule
-.PHONY : scratch/CMakeFiles/scratch_scratch-simulator.dir/rule
-
-# Convenience name for target.
-scratch_scratch-simulator: scratch/CMakeFiles/scratch_scratch-simulator.dir/rule
-.PHONY : scratch_scratch-simulator
-
-# fast build rule for target.
-scratch_scratch-simulator/fast:
-	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f scratch/CMakeFiles/scratch_scratch-simulator.dir/build.make scratch/CMakeFiles/scratch_scratch-simulator.dir/build
-.PHONY : scratch_scratch-simulator/fast
-
-# Convenience name for target.
-scratch/CMakeFiles/scratch_wifi-ai-dcf-original-backup.dir/rule:
-	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 scratch/CMakeFiles/scratch_wifi-ai-dcf-original-backup.dir/rule
-.PHONY : scratch/CMakeFiles/scratch_wifi-ai-dcf-original-backup.dir/rule
-
-# Convenience name for target.
-scratch_wifi-ai-dcf-original-backup: scratch/CMakeFiles/scratch_wifi-ai-dcf-original-backup.dir/rule
-.PHONY : scratch_wifi-ai-dcf-original-backup
-
-# fast build rule for target.
-scratch_wifi-ai-dcf-original-backup/fast:
-	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f scratch/CMakeFiles/scratch_wifi-ai-dcf-original-backup.dir/build.make scratch/CMakeFiles/scratch_wifi-ai-dcf-original-backup.dir/build
-.PHONY : scratch_wifi-ai-dcf-original-backup/fast
-
-# Convenience name for target.
 scratch/CMakeFiles/scratch_wifi-ai-dcf.dir/rule:
 	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 scratch/CMakeFiles/scratch_wifi-ai-dcf.dir/rule
 .PHONY : scratch/CMakeFiles/scratch_wifi-ai-dcf.dir/rule
@@ -246,30 +218,6 @@ scratch_subdir_scratch-subdir/fast:
 	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f scratch/CMakeFiles/scratch_subdir_scratch-subdir.dir/build.make scratch/CMakeFiles/scratch_subdir_scratch-subdir.dir/build
 .PHONY : scratch_subdir_scratch-subdir/fast
 
-scratch-simulator.o: scratch-simulator.cc.o
-.PHONY : scratch-simulator.o
-
-# target to build an object file
-scratch-simulator.cc.o:
-	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f scratch/CMakeFiles/scratch_scratch-simulator.dir/build.make scratch/CMakeFiles/scratch_scratch-simulator.dir/scratch-simulator.cc.o
-.PHONY : scratch-simulator.cc.o
-
-scratch-simulator.i: scratch-simulator.cc.i
-.PHONY : scratch-simulator.i
-
-# target to preprocess a source file
-scratch-simulator.cc.i:
-	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f scratch/CMakeFiles/scratch_scratch-simulator.dir/build.make scratch/CMakeFiles/scratch_scratch-simulator.dir/scratch-simulator.cc.i
-.PHONY : scratch-simulator.cc.i
-
-scratch-simulator.s: scratch-simulator.cc.s
-.PHONY : scratch-simulator.s
-
-# target to generate assembly for a file
-scratch-simulator.cc.s:
-	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f scratch/CMakeFiles/scratch_scratch-simulator.dir/build.make scratch/CMakeFiles/scratch_scratch-simulator.dir/scratch-simulator.cc.s
-.PHONY : scratch-simulator.cc.s
-
 subdir/scratch-subdir-additional-header.o: subdir/scratch-subdir-additional-header.cc.o
 .PHONY : subdir/scratch-subdir-additional-header.o
 
@@ -317,30 +265,6 @@ subdir/scratch-subdir.s: subdir/scratch-subdir.cc.s
 subdir/scratch-subdir.cc.s:
 	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f scratch/CMakeFiles/scratch_subdir_scratch-subdir.dir/build.make scratch/CMakeFiles/scratch_subdir_scratch-subdir.dir/subdir/scratch-subdir.cc.s
 .PHONY : subdir/scratch-subdir.cc.s
-
-wifi-ai-dcf-original-backup.o: wifi-ai-dcf-original-backup.cc.o
-.PHONY : wifi-ai-dcf-original-backup.o
-
-# target to build an object file
-wifi-ai-dcf-original-backup.cc.o:
-	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f scratch/CMakeFiles/scratch_wifi-ai-dcf-original-backup.dir/build.make scratch/CMakeFiles/scratch_wifi-ai-dcf-original-backup.dir/wifi-ai-dcf-original-backup.cc.o
-.PHONY : wifi-ai-dcf-original-backup.cc.o
-
-wifi-ai-dcf-original-backup.i: wifi-ai-dcf-original-backup.cc.i
-.PHONY : wifi-ai-dcf-original-backup.i
-
-# target to preprocess a source file
-wifi-ai-dcf-original-backup.cc.i:
-	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f scratch/CMakeFiles/scratch_wifi-ai-dcf-original-backup.dir/build.make scratch/CMakeFiles/scratch_wifi-ai-dcf-original-backup.dir/wifi-ai-dcf-original-backup.cc.i
-.PHONY : wifi-ai-dcf-original-backup.cc.i
-
-wifi-ai-dcf-original-backup.s: wifi-ai-dcf-original-backup.cc.s
-.PHONY : wifi-ai-dcf-original-backup.s
-
-# target to generate assembly for a file
-wifi-ai-dcf-original-backup.cc.s:
-	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache" && $(MAKE) $(MAKESILENT) -f scratch/CMakeFiles/scratch_wifi-ai-dcf-original-backup.dir/build.make scratch/CMakeFiles/scratch_wifi-ai-dcf-original-backup.dir/wifi-ai-dcf-original-backup.cc.s
-.PHONY : wifi-ai-dcf-original-backup.cc.s
 
 wifi-ai-dcf.o: wifi-ai-dcf.cc.o
 .PHONY : wifi-ai-dcf.o
@@ -426,24 +350,16 @@ help:
 	@echo "... install/strip"
 	@echo "... list_install_components"
 	@echo "... rebuild_cache"
-	@echo "... scratch_scratch-simulator"
 	@echo "... scratch_subdir_scratch-subdir"
 	@echo "... scratch_wifi-ai-dcf"
-	@echo "... scratch_wifi-ai-dcf-original-backup"
 	@echo "... scratch_wifi-baseline"
 	@echo "... scratch_wifi-edca"
-	@echo "... scratch-simulator.o"
-	@echo "... scratch-simulator.i"
-	@echo "... scratch-simulator.s"
 	@echo "... subdir/scratch-subdir-additional-header.o"
 	@echo "... subdir/scratch-subdir-additional-header.i"
 	@echo "... subdir/scratch-subdir-additional-header.s"
 	@echo "... subdir/scratch-subdir.o"
 	@echo "... subdir/scratch-subdir.i"
 	@echo "... subdir/scratch-subdir.s"
-	@echo "... wifi-ai-dcf-original-backup.o"
-	@echo "... wifi-ai-dcf-original-backup.i"
-	@echo "... wifi-ai-dcf-original-backup.s"
 	@echo "... wifi-ai-dcf.o"
 	@echo "... wifi-ai-dcf.i"
 	@echo "... wifi-ai-dcf.s"

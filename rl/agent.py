@@ -11,7 +11,7 @@ TARGET = "wifi-ai-dcf"
 # TRAINING SETTINGS
 # ============================================================
 
-SCENARIOS = range(1, 41)
+SCENARIOS = range(1, 21)
 
 ALPHA = 0.10
 GAMMA = 0.95

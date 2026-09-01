@@ -93,6 +93,7 @@ scratch_wifi__baseline_EXTERNAL_OBJECTS =
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/scratch/ns3.46.1-wifi-baseline-default: scratch/CMakeFiles/scratch_wifi-baseline.dir/wifi-baseline.cc.o
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/scratch/ns3.46.1-wifi-baseline-default: scratch/CMakeFiles/scratch_wifi-baseline.dir/build.make
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/scratch/ns3.46.1-wifi-baseline-default: /usr/lib/x86_64-linux-gnu/libprotobuf.so
+/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/scratch/ns3.46.1-wifi-baseline-default: /usr/lib/x86_64-linux-gnu/libsqlite3.so
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/scratch/ns3.46.1-wifi-baseline-default: scratch/CMakeFiles/scratch_wifi-baseline.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable \"/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/scratch/ns3.46.1-wifi-baseline-default\""
 	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/scratch" && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/scratch_wifi-baseline.dir/link.txt --verbose=$(VERBOSE)

@@ -8,6 +8,6 @@ URL:
 Version: 3.46.1
 Requires:  ns3-wifi ns3-applications
 Requires.private: 
-Cflags: -I"${includedir}"  -I/usr/include/eigen3 -I/usr/include
+Cflags: -I"${includedir}"  -I/usr/include -I/usr/include/eigen3
 Libs: -L"${libdir}" -lns3.46.1-mesh-default  -lns3.46.1-wifi-default -lns3.46.1-applications-default -lstdc++_libbacktrace
 Libs.private: -L"${libdir}" 

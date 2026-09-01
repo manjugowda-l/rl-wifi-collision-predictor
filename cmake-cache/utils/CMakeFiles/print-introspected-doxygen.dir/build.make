@@ -93,6 +93,7 @@ print__introspected__doxygen_EXTERNAL_OBJECTS =
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/utils/ns3.46.1-print-introspected-doxygen-default: utils/CMakeFiles/print-introspected-doxygen.dir/print-introspected-doxygen.cc.o
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/utils/ns3.46.1-print-introspected-doxygen-default: utils/CMakeFiles/print-introspected-doxygen.dir/build.make
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/utils/ns3.46.1-print-introspected-doxygen-default: /usr/lib/x86_64-linux-gnu/libprotobuf.so
+/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/utils/ns3.46.1-print-introspected-doxygen-default: /usr/lib/x86_64-linux-gnu/libsqlite3.so
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/utils/ns3.46.1-print-introspected-doxygen-default: utils/CMakeFiles/print-introspected-doxygen.dir/link.txt
 	@$(CMAKE_COMMAND) -E cmake_echo_color "--switch=$(COLOR)" --green --bold --progress-dir="/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/CMakeFiles" --progress-num=$(CMAKE_PROGRESS_2) "Linking CXX executable \"/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/utils/ns3.46.1-print-introspected-doxygen-default\""
 	cd "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/utils" && $(CMAKE_COMMAND) -E cmake_link_script CMakeFiles/print-introspected-doxygen.dir/link.txt --verbose=$(VERBOSE)

@@ -6,11 +6,8 @@ cmake_policy(SET CMP0009 NEW)
 file(GLOB NEW_GLOB LIST_DIRECTORIES true "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/**")
 set(OLD_GLOB
   "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/CMakeLists.txt"
-  "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/linear-mesh"
   "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/nested-subdir"
-  "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/scratch-simulator.cc"
   "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/subdir"
-  "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/wifi-ai-dcf-original-backup.cc"
   "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/wifi-ai-dcf.cc"
   "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/wifi-baseline.cc"
   "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/wifi-edca.cc"
@@ -23,20 +20,9 @@ endif()
 # single_source_file_scratches at scratch/CMakeLists.txt:67 (file)
 file(GLOB NEW_GLOB LIST_DIRECTORIES true "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/[^.]*.cc")
 set(OLD_GLOB
-  "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/scratch-simulator.cc"
-  "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/wifi-ai-dcf-original-backup.cc"
   "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/wifi-ai-dcf.cc"
   "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/wifi-baseline.cc"
   "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/wifi-edca.cc"
-  )
-if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
-  message("-- GLOB mismatch!")
-  file(TOUCH_NOCREATE "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/CMakeFiles/cmake.verify_globs")
-endif()
-
-# scratch_sources at scratch/CMakeLists.txt:98 (file)
-file(GLOB NEW_GLOB LIST_DIRECTORIES true "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/linear-mesh/[^.]*.cc")
-set(OLD_GLOB
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")

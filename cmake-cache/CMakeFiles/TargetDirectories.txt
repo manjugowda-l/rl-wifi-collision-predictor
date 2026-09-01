@@ -55,6 +55,7 @@
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/CMakeFiles/uninstall_pkgconfig_vr-app.dir
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/CMakeFiles/uninstall_pkgconfig_uart-net-device.dir
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/CMakeFiles/uninstall_pkgconfig_sip.dir
+/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/CMakeFiles/uninstall_pkgconfig_oran.dir
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/CMakeFiles/uninstall_pkgconfig_nr.dir
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/CMakeFiles/uninstall_pkgconfig_netsimulyzer.dir
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/CMakeFiles/uninstall_pkgconfig_lorawan.dir
@@ -126,6 +127,7 @@
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/contrib/nr/CMakeFiles/install.dir
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/contrib/nr/CMakeFiles/install/local.dir
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/contrib/nr/CMakeFiles/install/strip.dir
+/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/contrib/oran/CMakeFiles/oran.dir
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/contrib/oran/CMakeFiles/edit_cache.dir
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/contrib/oran/CMakeFiles/rebuild_cache.dir
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/contrib/oran/CMakeFiles/list_install_components.dir
@@ -474,8 +476,6 @@
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/examples/CMakeFiles/install.dir
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/examples/CMakeFiles/install/local.dir
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/examples/CMakeFiles/install/strip.dir
-/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/scratch/CMakeFiles/scratch_scratch-simulator.dir
-/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/scratch/CMakeFiles/scratch_wifi-ai-dcf-original-backup.dir
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/scratch/CMakeFiles/scratch_wifi-ai-dcf.dir
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/scratch/CMakeFiles/scratch_wifi-baseline.dir
 /mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/cmake-cache/scratch/CMakeFiles/scratch_wifi-edca.dir
