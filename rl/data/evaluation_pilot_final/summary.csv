@@ -1,0 +1,2 @@
+scenario,run,aggregate_throughput_mbps,packet_loss_percent,average_latency_ms,average_queue_wait_ms,mac_data_failures,mac_final_failures,final_cw
+1,1,0.542481,0,0.222029,0.257588,2,0,7.000000

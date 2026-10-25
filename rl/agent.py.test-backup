@@ -1,0 +1,208 @@
+#!/usr/bin/env python3
+"""Fresh tabular Q-learning training for the ns-3 Wi-Fi adaptive DCF experiment.
+
+Training uses scenarios 6..40. Scenarios 1..5 are held out for final comparison.
+Each episode is a fresh ns-3 process, which avoids ns3ai_gym_env singleton reuse.
+"""
+import csv
+import os
+import pickle
+import shutil
+from pathlib import Path
+
+import gymnasium as gym
+import ns3ai_gym_env  # registers the ns3-ai Gym environment
+import numpy as np
+
+TARGET = "wifi-ai-dcf"
+MODEL_FILE = Path("rl/q_table.pkl")
+BACKUP_FILE = Path("rl/q_table_backup.pkl")
+DATA_DIR = Path("rl/data")
+COMBINED_CSV = DATA_DIR / "all_training_data.csv"
+TRAIN_SCENARIOS = range(6, 41)  # 1..5 are held out for final evaluation
+EPISODES_PER_SCENARIO = 5
+ALPHA = 0.10
+GAMMA = 0.95
+EPSILON_START = 1.0
+EPSILON_MIN = 0.05
+EPSILON_DECAY = 0.985
+SEED_RUN_START = 1
+
+CSV_FIELDS = [
+    "scenario", "episode", "run", "step", "simulation_time",
+    "state", "action", "reward", "next_state", "epsilon",
+    "q_before", "q_after", "terminated", "truncated",
+]
+
+
+def discretize_state(observation):
+    s = np.asarray(observation, dtype=np.float32).reshape(-1)
+    if s.size < 7:
+        raise ValueError(f"Expected 7 observation values; got {s.size}: {s}")
+    qa = int(np.clip(s[0], 0, 10))
+    qb = int(np.clip(s[1], 0, 10))
+    ga = int(np.clip(s[2], -5, 5))
+    gb = int(np.clip(s[3], -5, 5))
+    loss = int(s[4] > 0)
+    failures = int(s[5] > 0)
+    cw = int(s[6])
+    if cw <= 3: cw_bin = 3
+    elif cw <= 7: cw_bin = 7
+    elif cw <= 15: cw_bin = 15
+    elif cw <= 31: cw_bin = 31
+    elif cw <= 63: cw_bin = 63
+    elif cw <= 127: cw_bin = 127
+    elif cw <= 255: cw_bin = 255
+    else: cw_bin = 1023
+    return (qa, qb, ga, gb, loss, failures, cw_bin)
+
+
+def load_q_table():
+    # The reset script removes both model files. Refuse accidental continuation.
+    if MODEL_FILE.exists():
+        raise FileExistsError(
+            f"{MODEL_FILE} already exists. Run ./rl/reset_rl.sh before a fresh training run."
+        )
+    return {}
+
+
+def q_values(table, state):
+    # Store values and action counts together. Counts let evaluation avoid treating
+    # never-tried zero-valued actions as better than actions with negative rewards.
+    if state not in table:
+        table[state] = {
+            "q": np.zeros(3, dtype=np.float32),
+            "visits": np.zeros(3, dtype=np.int64),
+        }
+    entry = table[state]
+    # Defensive migration for a pre-existing array-shaped entry; fresh runs should
+    # not encounter this because reset_rl.sh deletes the previous model.
+    if isinstance(entry, np.ndarray):
+        table[state] = {"q": entry.astype(np.float32), "visits": np.zeros(3, dtype=np.int64)}
+    return table[state]["q"]
+
+
+def save_q_table(table):
+    MODEL_FILE.parent.mkdir(parents=True, exist_ok=True)
+    tmp = MODEL_FILE.with_suffix(".pkl.tmp")
+    with tmp.open("wb") as f:
+        pickle.dump(table, f, protocol=pickle.HIGHEST_PROTOCOL)
+    tmp.replace(MODEL_FILE)
+    shutil.copy2(MODEL_FILE, BACKUP_FILE)
+
+
+def open_csv(path):
+    path.parent.mkdir(parents=True, exist_ok=True)
+    new_file = not path.exists() or path.stat().st_size == 0
+    f = path.open("a", newline="", encoding="utf-8")
+    writer = csv.DictWriter(f, fieldnames=CSV_FIELDS)
+    if new_file:
+        writer.writeheader()
+        f.flush()
+    return f, writer
+
+
+def run_episode(scenario, episode, run_number, epsilon, table, writer):
+    env = gym.make(
+        "ns3ai_gym_env/Ns3-v0",
+        targetName=TARGET,
+        ns3Path="./",
+        ns3Settings={"scenario": int(scenario), "run": int(run_number)},
+        debug=False,
+    )
+    total_reward = 0.0
+    steps = 0
+    action_counts = [0, 0, 0]
+    try:
+        observation, info = env.reset()
+        state = discretize_state(observation)
+        while True:
+            values = q_values(table, state)
+            q_before = values.copy()
+            if np.random.random() < epsilon:
+                action_index = int(np.random.randint(0, 3))
+            else:
+                # Random tie-breaking prevents a zero-valued unseen state from
+                # systematically preferring "decrease CW" during training.
+                best = np.flatnonzero(values == np.max(values))
+                action_index = int(np.random.choice(best))
+            action_counts[action_index] += 1
+            table[state]["visits"][action_index] += 1
+            next_obs, reward, terminated, truncated, info = env.step(
+                np.asarray([action_index], dtype=np.int32)
+            )
+            next_state = discretize_state(next_obs)
+            reward = float(reward)
+            next_values = q_values(table, next_state)
+            bootstrap = 0.0 if (terminated or truncated) else float(np.max(next_values))
+            target = reward + GAMMA * bootstrap
+            values[action_index] += ALPHA * (target - values[action_index])
+            total_reward += reward
+            steps += 1
+            sim_time = info.get("simulation_time", info.get("time", "")) if isinstance(info, dict) else ""
+            writer.writerow({
+                "scenario": scenario, "episode": episode, "run": run_number,
+                "step": steps, "simulation_time": sim_time,
+                "state": repr(state), "action": action_index, "reward": reward,
+                "next_state": repr(next_state), "epsilon": round(epsilon, 6),
+                "q_before": repr(q_before.tolist()),
+                "q_after": repr(values.tolist()),
+                "terminated": bool(terminated), "truncated": bool(truncated),
+            })
+            if steps % 25 == 0:
+                # Keep CSV rows safe if the process or simulation stops unexpectedly.
+                pass
+            state = next_state
+            if terminated or truncated:
+                break
+        print(
+            f"scenario={scenario:02d} episode={episode}/{EPISODES_PER_SCENARIO} "
+            f"run={run_number} steps={steps} reward={total_reward:.4f} "
+            f"epsilon={epsilon:.3f} actions(dec/keep/inc)={action_counts}",
+            flush=True,
+        )
+    finally:
+        env.close()
+    return total_reward, steps
+
+
+def main():
+    np.random.seed(20261024)
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    table = load_q_table()
+    epsilon = EPSILON_START
+    csv_file, writer = open_csv(COMBINED_CSV)
+    try:
+        total_episodes = len(list(TRAIN_SCENARIOS)) * EPISODES_PER_SCENARIO
+        completed = 0
+        print(f"Fresh Q-learning: {total_episodes} episodes; held-out scenarios 1..5.", flush=True)
+        for scenario in TRAIN_SCENARIOS:
+            per_scenario = DATA_DIR / f"scenario{scenario:02d}_training.csv"
+            local_file, local_writer = open_csv(per_scenario)
+            try:
+                for episode in range(1, EPISODES_PER_SCENARIO + 1):
+                    run_number = SEED_RUN_START + episode - 1
+                    # The same run number across scenarios makes each episode index
+                    # use a consistent ns-3 random-stream run, while scenarios differ.
+                    # One environment per episode is required by ns3ai_gym_env.
+                    class TeeWriter:
+                        def writerow(self, row):
+                            writer.writerow(row)
+                            local_writer.writerow(row)
+                            csv_file.flush()
+                            local_file.flush()
+                    run_episode(scenario, episode, run_number, epsilon, table, TeeWriter())
+                    completed += 1
+                    epsilon = max(EPSILON_MIN, epsilon * EPSILON_DECAY)
+                    save_q_table(table)
+                    print(f"checkpoint {completed}/{total_episodes}; Q-states={len(table)}", flush=True)
+            finally:
+                local_file.close()
+    finally:
+        csv_file.close()
+    save_q_table(table)
+    print(f"TRAINING COMPLETE: episodes={completed}; Q-states={len(table)}; model={MODEL_FILE}")
+
+
+if __name__ == "__main__":
+    main()

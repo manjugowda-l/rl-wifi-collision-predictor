@@ -8,6 +8,6 @@ URL:
 Version: 3.46.1
 Requires:  ns3-core
 Requires.private: 
-Cflags: -I"${includedir}"  -I/usr/include -I/usr/include/eigen3 -I/usr/include/python3.12
-Libs: -L"${libdir}" -lns3.46.1-ai-default  -lns3.46.1-core-default -lprotobuf::libprotobuf -lstdc++_libbacktrace
+Cflags: -I"${includedir}"  -I/usr/include -I/usr/include/eigen3 -I/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/.venv/lib/python3.14/site-packages/pybind11/include -I/usr/include/python3.14
+Libs: -L"${libdir}" -lns3.46.1-ai-default  -lns3.46.1-core-default -lprotobuf::libprotobuf -lstdc++exp
 Libs.private: -L"${libdir}" 

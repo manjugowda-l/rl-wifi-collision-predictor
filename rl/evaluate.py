@@ -1,618 +1,169 @@
 import csv
 import os
-import pickle
+import subprocess
+import sys
+from datetime import datetime, timezone
 
 import gymnasium as gym
 import ns3ai_gym_env
 import numpy as np
 
-
-# ============================================================
-# CONFIGURATION
-# ============================================================
+from common import discretize_state, greedy_action, load_checkpoint
 
 TARGET = "wifi-ai-dcf"
+MODEL_FILE = "rl/q_table_v2.json"
+RESULTS_FILE = "wifi_ai_dcf_results_v2.csv"
+SCENARIOS = (1, 2, 3, 4, 5)
+SINGLE_SCENARIO_ENV = "WIFI_RL_EVAL_SINGLE_SCENARIO"
+OUTPUT_DIR_ENV = "WIFI_RL_EVAL_OUTPUT_DIR"
 
-MODEL_FILE = "rl/q_table.pkl"
+RAW_FIELDS = [
+    "scenario", "run", "tx_packets", "rx_packets", "lost_packets",
+    "packet_loss_percent", "aggregate_throughput_mbps",
+    "average_latency_ms", "average_queue_a", "average_queue_b",
+    "max_queue_a", "max_queue_b", "queue_activity_observed",
+    "average_queue_wait_ms", "mac_data_failures", "mac_final_failures",
+    "successful_mac_transmissions", "final_cw",
+]
+SUMMARY_FIELDS = [
+    "scenario", "run", "aggregate_throughput_mbps",
+    "packet_loss_percent", "average_latency_ms",
+    "average_queue_wait_ms", "mac_data_failures",
+    "mac_final_failures", "final_cw",
+]
 
-RESULTS_FILE = "wifi_ai_dcf_results.csv"
 
-# ============================================================
-# EVALUATE ONE SCENARIO AT A TIME
-# ============================================================
-
-SCENARIOS = [3]
-
-# No exploration during evaluation.
-EPSILON = 0.0
+def current_results_size():
+    return os.path.getsize(RESULTS_FILE) if os.path.isfile(RESULTS_FILE) else 0
 
 
-# ============================================================
-# STATE DISCRETIZATION
-# MUST MATCH agent.py
-# ============================================================
-
-def discretize_state(state, info):
-
-    queue_a = min(
-        int(state[0]),
-        10
-    )
-
-    queue_b = min(
-        int(state[1]),
-        10
-    )
-
-    growth_a = int(
-        np.clip(
-            state[2],
-            -5,
-            5
+def read_appended_result(offset, scenario, run_number):
+    if not os.path.isfile(RESULTS_FILE):
+        raise FileNotFoundError(
+            f"ns-3 did not create {RESULTS_FILE}; evaluation cannot report results."
         )
-    )
-
-    growth_b = int(
-        np.clip(
-            state[3],
-            -5,
-            5
+    with open(RESULTS_FILE, "r", newline="", encoding="utf-8") as result_file:
+        result_file.seek(offset)
+        rows = list(csv.DictReader(result_file, fieldnames=RAW_FIELDS))
+    matching = [
+        row
+        for row in rows
+        if row.get("scenario") == str(scenario)
+        and row.get("run") == str(run_number)
+    ]
+    if not matching:
+        raise RuntimeError(
+            f"ns-3 completed scenario {scenario}, run {run_number}, "
+            f"but appended no matching row to {RESULTS_FILE}."
         )
-    )
-
-    packet_loss = int(
-        state[4] > 0
-    )
-
-    mac_failures = int(
-        state[5] > 0
-    )
-
-    cw = int(
-        state[6]
-    )
-
-    # --------------------------------------------------------
-    # CW BIN
-    # --------------------------------------------------------
-
-    if cw <= 3:
-        cw_bin = 3
-
-    elif cw <= 7:
-        cw_bin = 7
-
-    elif cw <= 15:
-        cw_bin = 15
-
-    elif cw <= 31:
-        cw_bin = 31
-
-    elif cw <= 63:
-        cw_bin = 63
-
-    elif cw <= 127:
-        cw_bin = 127
-
-    elif cw <= 255:
-        cw_bin = 255
-
-    else:
-        cw_bin = 1023
-
-    # --------------------------------------------------------
-    # LATENCY BIN
-    # MUST MATCH agent.py
-    # --------------------------------------------------------
-
-    try:
-
-        latency = float(
-            info.get(
-                "latencyMs",
-                0.0
-            )
-        )
-
-    except (
-        TypeError,
-        ValueError
-    ):
-
-        latency = 0.0
-
-    if latency < 1.0:
-        latency_bin = 0
-
-    elif latency < 5.0:
-        latency_bin = 1
-
-    elif latency < 10.0:
-        latency_bin = 2
-
-    elif latency < 25.0:
-        latency_bin = 3
-
-    elif latency < 50.0:
-        latency_bin = 4
-
-    elif latency < 100.0:
-        latency_bin = 5
-
-    else:
-        latency_bin = 6
-
-    return (
-        queue_a,
-        queue_b,
-        growth_a,
-        growth_b,
-        packet_loss,
-        mac_failures,
-        latency_bin,
-        cw_bin,
-    )
-
-
-# ============================================================
-# LOAD Q-TABLE
-# ============================================================
-
-print()
-print("========================================")
-print("       WIFI AI DCF - EVALUATION")
-print("========================================")
-
-if not os.path.exists(
-    MODEL_FILE
-):
-
-    raise FileNotFoundError(
-        f"Trained Q-table not found: "
-        f"{MODEL_FILE}"
-    )
-
-
-with open(
-    MODEL_FILE,
-    "rb"
-) as f:
-
-    q_table = pickle.load(
-        f
-    )
-
-
-print(
-    f"Loaded Q-states : "
-    f"{len(q_table)}"
-)
-
-print(
-    f"Evaluation epsilon : "
-    f"{EPSILON}"
-)
-
-print(
-    f"Scenarios : "
-    f"{SCENARIOS}"
-)
-
-print("========================================")
-
-
-# ============================================================
-# Q VALUES
-# ============================================================
-
-def get_q_values(state):
-
-    return q_table.get(
-        state,
-        np.zeros(
-            3,
-            dtype=np.float32
-        )
-    )
-
-
-# ============================================================
-# BEST ACTION
-#
-# 0 = DECREASE CW
-# 1 = KEEP CW
-# 2 = INCREASE CW
-# ============================================================
-
-def choose_best_action(state):
-
-    q_values = get_q_values(
-        state
-    )
-
-    return int(
-        np.argmax(q_values)
-    )
-
-
-# ============================================================
-# READ FINAL NS-3 RESULTS
-# ============================================================
-
-def get_latest_results(
-    scenario,
-    run_number=1
-):
-
-    if not os.path.exists(
-        RESULTS_FILE
-    ):
-
-        return None
-
-    latest = None
-
-    with open(
-        RESULTS_FILE,
-        newline=""
-    ) as f:
-
-        reader = csv.DictReader(
-            f
-        )
-
-        for row in reader:
-
-            try:
-
-                row_scenario = int(
-                    row["scenario"]
-                )
-
-                row_run = int(
-                    row["run"]
-                )
-
-            except (
-                KeyError,
-                ValueError
-            ):
-
-                continue
-
-            if (
-                row_scenario == scenario
-                and row_run == run_number
-            ):
-
-                latest = row
-
-    return latest
-
-
-# ============================================================
-# PRINT FINAL RESULTS
-# ============================================================
-
-def print_final_results(
-    results
-):
-
-    if results is None:
-
-        print()
-        print(
-            "[WARNING] "
-            "No final ns-3 results found."
-        )
-
-        return
-
-    print()
-    print("==================================================")
-    print("                 FINAL RESULTS")
-    print("==================================================")
-
-    print(
-        f"Scenario                    : "
-        f"{results['scenario']}"
-    )
-
-    print(
-        f"Random run                  : "
-        f"{results['run']}"
-    )
-
-    print(
-        f"Total TX packets            : "
-        f"{results['tx_packets']}"
-    )
-
-    print(
-        f"Total RX packets            : "
-        f"{results['rx_packets']}"
-    )
-
-    print(
-        f"Lost packets                : "
-        f"{results['lost_packets']}"
-    )
-
-    print(
-        f"Packet loss                 : "
-        f"{results['packet_loss_percent']} %"
-    )
-
-    print(
-        f"Average latency             : "
-        f"{results['average_latency_ms']} ms"
-    )
-
-    print(
-        f"Average queue A             : "
-        f"{results['average_queue_a']} packets"
-    )
-
-    print(
-        f"Average queue B             : "
-        f"{results['average_queue_b']} packets"
-    )
-
-    print(
-        f"Maximum queue A             : "
-        f"{results['max_queue_a']} packets"
-    )
-
-    print(
-        f"Maximum queue B             : "
-        f"{results['max_queue_b']} packets"
-    )
-
-    activity = (
-        "YES"
-        if int(
-            float(
-                results[
-                    "queue_activity_observed"
-                ]
-            )
-        ) > 0
-        else "NO"
-    )
-
-    print(
-        f"Queue activity observed     : "
-        f"{activity}"
-    )
-
-    print(
-        f"Average queue waiting time  : "
-        f"{results['average_queue_wait_ms']} ms"
-    )
-
-    print(
-        f"MAC data failures           : "
-        f"{results['mac_data_failures']}"
-    )
-
-    print(
-        f"MAC final failures          : "
-        f"{results['mac_final_failures']}"
-    )
-
-    print(
-        f"Successful MAC transmissions: "
-        f"{results['successful_mac_transmissions']}"
-    )
-
-    print(
-        f"Final CW                    : "
-        f"{results['final_cw']}"
-    )
-
-    print("==================================================")
-
-
-# ============================================================
-# RUN ONE SCENARIO
-# ============================================================
-
-def run_one_scenario(
-    scenario
-):
-
-    print()
-    print("########################################")
-    print(
-        f"       RL EVALUATION - "
-        f"SCENARIO {scenario}"
-    )
-    print("########################################")
-
+    row = matching[-1]
+    missing = [field for field in RAW_FIELDS if field not in row]
+    if missing:
+        raise ValueError(f"Incomplete ns-3 results row; missing {missing}")
+    return row
+
+
+def append_csv_row(path, fields, row):
+    os.makedirs(os.path.dirname(path), exist_ok=True)
+    write_header = not os.path.exists(path) or os.path.getsize(path) == 0
+    with open(path, "a", newline="", encoding="utf-8") as output_file:
+        writer = csv.DictWriter(output_file, fieldnames=fields, extrasaction="ignore")
+        if write_header:
+            writer.writeheader()
+        writer.writerow(row)
+
+
+def run_one_scenario(scenario, output_dir):
+    _metadata, q_table = load_checkpoint(MODEL_FILE)
+    print(f"\n######## RL EVALUATION - SCENARIO {scenario} ########")
+
+    result_offset = current_results_size()
     env = gym.make(
         "ns3ai_gym_env/Ns3-v0",
         targetName=TARGET,
         ns3Path="./",
-        ns3Settings={
-            "scenario": scenario,
-            "run": 1,
-        },
+        ns3Settings={"scenario": scenario, "run": 1},
         debug=False,
     )
-
+    action_counts = {0: 0, 1: 0, 2: 0}
+    unseen_states = 0
+    total_reward = 0.0
     steps = 0
-
-    # This is only for displaying the C++ reward.
-    # Evaluation does NOT update the Q-table.
-    total_environment_reward = 0.0
-
-    action_counts = {
-        0: 0,
-        1: 0,
-        2: 0,
-    }
-
     try:
-
-        # ----------------------------------------------------
-        # START NS-3
-        # ----------------------------------------------------
-
-        obs, info = env.reset()
-
-        state = discretize_state(
-            np.asarray(
-                obs,
-                dtype=np.float32
-            ),
-            info
-        )
-
-        # ----------------------------------------------------
-        # EVALUATION LOOP
-        # ----------------------------------------------------
-
+        observation, _info = env.reset()
+        raw_observation = np.asarray(observation, dtype=np.float32)
+        state = discretize_state(raw_observation)
         while True:
-
-            action_value = (
-                choose_best_action(
-                    state
-                )
+            current_cw = int(round(float(raw_observation[6])))
+            if state in q_table:
+                q_values = q_table[state]
+            else:
+                unseen_states += 1
+                q_values = np.zeros(3, dtype=np.float64)
+            action = greedy_action(q_values, current_cw)
+            action_counts[action] += 1
+            next_observation, reward, terminated, truncated, _next_info = env.step(
+                np.asarray([action], dtype=np.int32)
             )
-
-            action_counts[
-                action_value
-            ] += 1
-
-            action = np.asarray(
-                [action_value],
-                dtype=np.int32
-            )
-
-            (
-                next_obs,
-                reward,
-                terminated,
-                truncated,
-                next_info
-            ) = env.step(
-                action
-            )
-
-            next_state = (
-                discretize_state(
-                    np.asarray(
-                        next_obs,
-                        dtype=np.float32
-                    ),
-                    next_info
-                )
-            )
-
-            total_environment_reward += (
-                float(reward)
-            )
-
+            raw_observation = np.asarray(next_observation, dtype=np.float32)
+            state = discretize_state(raw_observation)
+            total_reward += float(reward)
             steps += 1
-
-            state = next_state
-
-            if (
-                terminated
-                or truncated
-            ):
-
+            if terminated or truncated:
                 break
-
-        # ----------------------------------------------------
-        # EVALUATION SUMMARY
-        # ----------------------------------------------------
-
-        print()
-        print("----------------------------------------")
-        print(
-            f"SCENARIO {scenario} "
-            f"RL SUMMARY"
-        )
-        print("----------------------------------------")
-
-        print(
-            f"Steps              : "
-            f"{steps}"
-        )
-
-        print(
-            f"Transitions        : "
-            f"{steps}"
-        )
-
-        print(
-            f"Environment reward : "
-            f"{total_environment_reward:.4f}"
-        )
-
-        print()
-        print("Actions selected:")
-
-        print(
-            f"Decrease CW        : "
-            f"{action_counts[0]}"
-        )
-
-        print(
-            f"Keep CW            : "
-            f"{action_counts[1]}"
-        )
-
-        print(
-            f"Increase CW        : "
-            f"{action_counts[2]}"
-        )
-
-        print("----------------------------------------")
-
     finally:
-
-        # ----------------------------------------------------
-        # CLOSE NS-3
-        # ----------------------------------------------------
-
         env.close()
 
-    # --------------------------------------------------------
-    # READ FINAL C++ RESULTS
-    # --------------------------------------------------------
-
-    results = get_latest_results(
-        scenario,
-        1
+    result = read_appended_result(result_offset, scenario, 1)
+    append_csv_row(
+        os.path.join(output_dir, "raw_results.csv"),
+        RAW_FIELDS,
+        result,
+    )
+    append_csv_row(
+        os.path.join(output_dir, "summary.csv"),
+        SUMMARY_FIELDS,
+        result,
+    )
+    print(
+        f"Steps: {steps}; reward sum: {total_reward:.4f}; "
+        f"unseen states: {unseen_states}; "
+        f"actions decrease/keep/increase: "
+        f"{action_counts[0]}/{action_counts[1]}/{action_counts[2]}"
+    )
+    print(
+        "Measured: throughput={aggregate_throughput_mbps} Mbps, "
+        "loss={packet_loss_percent}%, latency={average_latency_ms} ms, "
+        "queue wait={average_queue_wait_ms} ms, "
+        "MAC failures={mac_data_failures}, final CW={final_cw}".format(**result)
     )
 
-    print_final_results(
-        results
-    )
 
+def main():
+    # Validate the model before launching ns-3, including in child processes.
+    load_checkpoint(MODEL_FILE)
+    child_scenario = os.environ.get(SINGLE_SCENARIO_ENV)
+    if child_scenario is not None:
+        scenario = int(child_scenario)
+        if scenario not in SCENARIOS:
+            raise ValueError(f"Evaluation scenario must be 1-5, got {scenario}")
+        output_dir = os.environ.get(OUTPUT_DIR_ENV)
+        if not output_dir:
+            raise ValueError(f"{OUTPUT_DIR_ENV} is required in scenario worker mode")
+        run_one_scenario(scenario, output_dir)
+        return
 
-# ============================================================
-# MAIN
-# ============================================================
+    run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    output_dir = os.path.join("rl", "data", f"evaluation_{run_id}")
+    os.makedirs(output_dir, exist_ok=False)
+    for scenario in SCENARIOS:
+        child_env = os.environ.copy()
+        child_env[SINGLE_SCENARIO_ENV] = str(scenario)
+        child_env[OUTPUT_DIR_ENV] = output_dir
+        subprocess.run([sys.executable, __file__], env=child_env, check=True)
+    print(f"\nRaw measured results: {os.path.join(output_dir, 'raw_results.csv')}")
+    print(f"Summary: {os.path.join(output_dir, 'summary.csv')}")
+
 
 if __name__ == "__main__":
-
-    for scenario in SCENARIOS:
-
-        run_one_scenario(
-            scenario
-        )
-
-    print()
-    print("==================================================")
-    print("           RL EVALUATION FINISHED")
-    print("==================================================")
-
-    print(
-        "Scenarios completed:",
-        len(SCENARIOS)
-    )
-
-    print("==================================================")
+    main()

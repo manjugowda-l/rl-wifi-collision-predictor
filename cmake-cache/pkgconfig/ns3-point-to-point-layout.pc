@@ -9,5 +9,5 @@ Version: 3.46.1
 Requires:  ns3-internet ns3-point-to-point ns3-mobility
 Requires.private: 
 Cflags: -I"${includedir}"  -I/usr/include -I/usr/include/eigen3
-Libs: -L"${libdir}" -lns3.46.1-point-to-point-layout-default  -lns3.46.1-internet-default -lns3.46.1-point-to-point-default -lns3.46.1-mobility-default -lstdc++_libbacktrace
+Libs: -L"${libdir}" -lns3.46.1-point-to-point-layout-default  -lns3.46.1-internet-default -lns3.46.1-point-to-point-default -lns3.46.1-mobility-default -lstdc++exp
 Libs.private: -L"${libdir}" 

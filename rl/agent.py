@@ -1,614 +1,227 @@
+import csv
+import os
+import subprocess
+import sys
+from datetime import datetime, timezone
+
 import gymnasium as gym
 import ns3ai_gym_env
 import numpy as np
-import pickle
-import os
-import csv
+
+from common import (
+    allowed_actions,
+    discretize_state,
+    greedy_action,
+    load_checkpoint,
+    save_checkpoint,
+)
 
 TARGET = "wifi-ai-dcf"
-
-# ============================================================
-# TRAINING SETTINGS
-# ============================================================
-
-SCENARIOS = range(1, 21)
+SCENARIOS = range(1, 41)
+MODEL_FILE = "rl/q_table_v2.json"
+DATA_ROOT = "rl/data"
+RL_INTERVAL = 0.1
 
 ALPHA = 0.10
 GAMMA = 0.95
-
 EPSILON_START = 1.0
 EPSILON_MIN = 0.05
-EPSILON_DECAY = 0.90
-
-MODEL_FILE = "rl/q_table.pkl"
-DATA_DIR = "rl/data"
-COMBINED_CSV = os.path.join(DATA_DIR, "all_training_data.csv")
-
-RL_INTERVAL = 0.1
-
-
-# ============================================================
-# STATE DISCRETIZATION
-# ============================================================
-
-def discretize_state(state):
-
-    queue_a = min(int(state[0]), 10)
-    queue_b = min(int(state[1]), 10)
-
-    growth_a = int(np.clip(state[2], -5, 5))
-    growth_b = int(np.clip(state[3], -5, 5))
-
-    packet_loss = int(state[4] > 0)
-    mac_failures = int(state[5] > 0)
-
-    cw = int(state[6])
-
-    if cw <= 3:
-        cw_bin = 3
-    elif cw <= 7:
-        cw_bin = 7
-    elif cw <= 15:
-        cw_bin = 15
-    elif cw <= 31:
-        cw_bin = 31
-    elif cw <= 63:
-        cw_bin = 63
-    elif cw <= 127:
-        cw_bin = 127
-    elif cw <= 255:
-        cw_bin = 255
-    else:
-        cw_bin = 1023
-
-    return (
-        queue_a,
-        queue_b,
-        growth_a,
-        growth_b,
-        packet_loss,
-        mac_failures,
-        cw_bin,
-    )
-
-
-# ============================================================
-# Q-TABLE
-# ============================================================
-
-# ============================================================
-# Q-TABLE
-# ============================================================
-
-if os.path.exists(MODEL_FILE):
-
-    print(
-        f"[LOAD] Existing Q-table found: {MODEL_FILE}"
-    )
-
-    with open(
-        MODEL_FILE,
-        "rb"
-    ) as f:
-
-        q_table = pickle.load(f)
-
-    print(
-        f"[LOAD] Q-states: {len(q_table)}"
-    )
-
-else:
-
-    q_table = {}
-
-    print(
-        "[LOAD] No existing Q-table. Starting fresh."
-    )
-
-
-def get_q_values(state):
-
-    if state not in q_table:
-
-        q_table[state] = np.zeros(
-            3,
-            dtype=np.float32
-        )
-
-    return q_table[state]
-
-# ============================================================
-# ACTION
-#
-# 0 = decrease CW
-# 1 = keep CW
-# 2 = increase CW
-# ============================================================
-
-def choose_action(state, epsilon):
-
-    if np.random.random() < epsilon:
-        return np.random.randint(0, 3)
-
-    q_values = get_q_values(state)
-
-    return int(np.argmax(q_values))
-
-
-# ============================================================
-# CSV HEADER
-# ============================================================
+EPSILON_DECAY_PER_STEP = 0.9999
+SINGLE_SCENARIO_ENV = "WIFI_RL_TRAIN_SINGLE_SCENARIO"
 
 CSV_HEADER = [
-    "scenario",
-    "run",
-    "episode",
-    "step",
-    "simulation_time",
-
-    "queueA",
-    "queueB",
-    "queueGrowthA",
-    "queueGrowthB",
-    "packetLoss",
-    "macFailures",
-    "currentCW",
-
-    "action",
-    "cwBefore",
-    "cwAfter",
-
-    "reward",
-
-    "nextQueueA",
-    "nextQueueB",
-    "nextQueueGrowthA",
-    "nextQueueGrowthB",
-    "nextPacketLoss",
-    "nextMacFailures",
-    "nextCW",
-
-    "epsilon",
-
-    "qBefore",
-    "qAfter"
+    "episode_id", "scenario", "run", "step", "simulation_time",
+    "queueA", "queueB", "queueGrowthA", "queueGrowthB",
+    "packetLossBin", "macFailureBin", "latencyBin", "currentCW",
+    "action", "cwBefore", "cwAfter", "reward",
+    "nextQueueA", "nextQueueB", "nextQueueGrowthA", "nextQueueGrowthB",
+    "nextPacketLossBin", "nextMacFailureBin", "nextLatencyBin", "nextCW",
+    "epsilon", "qBefore", "qAfter",
 ]
 
 
-# ============================================================
-# PREPARE DATA DIRECTORY
-# ============================================================
+def initialize_or_resume(scenario):
+    if os.path.isfile(MODEL_FILE):
+        metadata, q_table = load_checkpoint(MODEL_FILE)
+        next_scenario = metadata.get("next_scenario")
+        if not isinstance(next_scenario, int) or next_scenario not in range(1, 42):
+            raise ValueError(f"Invalid next_scenario in checkpoint {MODEL_FILE}")
+        if scenario != next_scenario:
+            raise ValueError(
+                f"Training checkpoint expects scenario {next_scenario}, "
+                f"but child was asked to run {scenario}."
+            )
+        return metadata, q_table
 
-os.makedirs(DATA_DIR, exist_ok=True)
-
-
-# ============================================================
-# TRAINING
-# ============================================================
-
-print("==================================================")
-print("          WIFI AI DCF - 40 SCENARIO Q-LEARNING")
-print("==================================================")
-print(f"Scenarios       : 1 - 40")
-print(f"RL interval     : {RL_INTERVAL} s")
-print(f"Alpha           : {ALPHA}")
-print(f"Gamma           : {GAMMA}")
-print(f"Initial epsilon : {EPSILON_START}")
-print(f"Minimum epsilon : {EPSILON_MIN}")
-print("==================================================")
-
-
-epsilon = EPSILON_START
-
-total_transitions = 0
-total_scenarios_completed = 0
-
-combined_file = open(
-    COMBINED_CSV,
-    "w",
-    newline=""
-)
-
-combined_writer = csv.writer(combined_file)
-combined_writer.writerow(CSV_HEADER)
-
-
-try:
-
-    # ========================================================
-    # SCENARIO LOOP
-    # ========================================================
-
-    for scenario in SCENARIOS:
-
-        run_number = scenario
-
-        csv_file_path = os.path.join(
-            DATA_DIR,
-            f"scenario{scenario:02d}_training.csv"
+    if scenario != 1:
+        raise FileNotFoundError(
+            f"Cannot start scenario {scenario}: {MODEL_FILE} is missing and "
+            "training must start at scenario 1."
         )
 
-        print()
-        print("==================================================")
-        print(f"STARTING SCENARIO {scenario}/40")
-        print(f"Random run      : {run_number}")
-        print(f"CSV             : {csv_file_path}")
-        print("==================================================")
+    run_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    run_dir = os.path.join(DATA_ROOT, f"training_{run_id}")
+    os.makedirs(run_dir, exist_ok=False)
+    return {
+        "next_scenario": 1,
+        "epsilon": EPSILON_START,
+        "completed_scenarios": [],
+        "run_dir": run_dir,
+        "total_transitions": 0,
+    }, {}
 
-        # ----------------------------------------------------
-        # Open scenario-specific CSV
-        # ----------------------------------------------------
 
-        scenario_file = open(
-            csv_file_path,
-            "w",
-            newline=""
-        )
+def run_one_scenario(scenario):
+    metadata, q_table = initialize_or_resume(scenario)
+    np.random.seed(12345 + scenario)
+    run_number = scenario
+    epsilon = float(metadata["epsilon"])
+    run_dir = metadata["run_dir"]
+    os.makedirs(run_dir, exist_ok=True)
+    scenario_csv = os.path.join(run_dir, f"scenario{scenario:02d}_training.csv")
+    combined_csv = os.path.join(run_dir, "all_training_data.csv")
+    episode_id = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S.%fZ")
 
-        scenario_writer = csv.writer(scenario_file)
-        scenario_writer.writerow(CSV_HEADER)
+    def get_q_values(state):
+        if state not in q_table:
+            q_table[state] = np.zeros(3, dtype=np.float64)
+        return q_table[state]
 
-        env = None
+    print(
+        f"[START] Scenario {scenario}/40, run={run_number}, "
+        f"epsilon={epsilon:.4f}, checkpoint={MODEL_FILE}",
+        flush=True,
+    )
+    env = gym.make(
+        "ns3ai_gym_env/Ns3-v0",
+        targetName=TARGET,
+        ns3Path="./",
+        ns3Settings={"scenario": scenario, "run": run_number},
+        debug=False,
+    )
+    rows_written = 0
+    total_reward = 0.0
+    try:
+        observation, _info = env.reset()
+        raw_state = np.asarray(observation, dtype=np.float32)
+        state = discretize_state(raw_state)
+        steps = 0
 
-        try:
-
-            # ------------------------------------------------
-            # CREATE NS-3 GYM ENVIRONMENT
-            # ------------------------------------------------
-
-            print(
-                "[PYTHON] Creating ns-3 Gym environment...",
-                flush=True
-            )
-
-            env = gym.make(
-                "ns3ai_gym_env/Ns3-v0",
-                targetName=TARGET,
-                ns3Path="./",
-                ns3Settings={
-                    "scenario": scenario,
-                    "run": run_number,
-                },
-                debug=False,
-            )
-
-            print(
-                "[PYTHON] Gym environment created.",
-                flush=True
-            )
-
-            print(
-                "Observation space:",
-                env.observation_space
-            )
-
-            print(
-                "Action space:",
-                env.action_space
-            )
-
-            # ------------------------------------------------
-            # ONE EPISODE PER SCENARIO
-            # ------------------------------------------------
-
-            obs, info = env.reset()
-
-            raw_state = np.asarray(
-                obs,
-                dtype=np.float32
-            )
-
-            state = discretize_state(raw_state)
-
-            total_reward = 0.0
-            steps = 0
+        with open(scenario_csv, "a", newline="", encoding="utf-8") as scenario_file, \
+                open(combined_csv, "a", newline="", encoding="utf-8") as combined_file:
+            scenario_writer = csv.writer(scenario_file)
+            combined_writer = csv.writer(combined_file)
+            if scenario_file.tell() == 0:
+                scenario_writer.writerow(CSV_HEADER)
+            if combined_file.tell() == 0:
+                combined_writer.writerow(CSV_HEADER)
 
             while True:
+                cw_before = int(round(float(raw_state[6])))
+                actions = allowed_actions(cw_before)
+                if np.random.random() < epsilon:
+                    action_value = int(np.random.choice(actions))
+                else:
+                    action_value = greedy_action(get_q_values(state), cw_before)
 
-                # ============================================
-                # STATE BEFORE ACTION
-                # ============================================
-
-                current_raw_state = raw_state.copy()
-
-                cw_before = int(
-                    current_raw_state[6]
+                next_observation, reward, terminated, truncated, _next_info = env.step(
+                    np.asarray([action_value], dtype=np.int32)
                 )
-
-                # ============================================
-                # CHOOSE ACTION
-                # ============================================
-
-                action_value = choose_action(
-                    state,
-                    epsilon
-                )
-
-                action = np.asarray(
-                    [action_value],
-                    dtype=np.int32
-                )
-
-                # ============================================
-                # EXECUTE ACTION IN NS-3
-                # ============================================
-
-                (
-                    next_obs,
-                    reward,
-                    terminated,
-                    truncated,
-                    info
-                ) = env.step(action)
-
-                next_raw_state = np.asarray(
-                    next_obs,
-                    dtype=np.float32
-                )
-
-                next_state = discretize_state(
-                    next_raw_state
-                )
-
+                next_raw_state = np.asarray(next_observation, dtype=np.float32)
+                next_state = discretize_state(next_raw_state)
+                cw_after = int(round(float(next_raw_state[6])))
                 reward = float(reward)
-
-                cw_after = int(
-                    next_raw_state[6]
-                )
-
-                # ============================================
-                # Q-LEARNING UPDATE
-                # ============================================
+                if not np.isfinite(reward) or not -1.000001 <= reward <= 1.000001:
+                    raise ValueError(f"Invalid normalized reward from ns-3: {reward}")
 
                 current_q = get_q_values(state)
-
                 next_q = get_q_values(next_state)
-
-                q_before = float(
-                    current_q[action_value]
-                )
-
-                best_next_q = float(
-                    np.max(next_q)
-                )
-
-                target = (
-                    reward
-                    + GAMMA * best_next_q
-                )
-
+                q_before = float(current_q[action_value])
+                if terminated or truncated:
+                    target = reward
+                else:
+                    next_actions = allowed_actions(cw_after)
+                    target = reward + GAMMA * max(
+                        float(next_q[action]) for action in next_actions
+                    )
                 current_q[action_value] += ALPHA * (
-                    target
-                    - current_q[action_value]
+                    target - current_q[action_value]
                 )
-
-                q_after = float(
-                    current_q[action_value]
-                )
-
-                # ============================================
-                # SIMULATION TIME
-                # ============================================
-
-                simulation_time = (
-                    steps * RL_INTERVAL
-                )
-
-                # ============================================
-                # TRANSITION ROW
-                # ============================================
+                q_after = float(current_q[action_value])
 
                 row = [
-
-                    scenario,
-                    run_number,
-                    1,
-                    steps + 1,
-                    f"{simulation_time:.3f}",
-
-                    current_raw_state[0],
-                    current_raw_state[1],
-                    current_raw_state[2],
-                    current_raw_state[3],
-                    current_raw_state[4],
-                    current_raw_state[5],
-                    cw_before,
-
-                    action_value,
-                    cw_before,
-                    cw_after,
-
-                    reward,
-
-                    next_raw_state[0],
-                    next_raw_state[1],
-                    next_raw_state[2],
-                    next_raw_state[3],
-                    next_raw_state[4],
-                    next_raw_state[5],
-                    int(next_raw_state[6]),
-
-                    epsilon,
-
-                    q_before,
-                    q_after
+                    episode_id, scenario, run_number, steps + 1,
+                    f"{steps * RL_INTERVAL:.3f}",
+                    *state[:4], state[4], state[5], state[6], state[7],
+                    action_value, cw_before, cw_after, reward,
+                    *next_state[:4], next_state[4], next_state[5],
+                    next_state[6], next_state[7], epsilon, q_before, q_after,
                 ]
-
-                # ============================================
-                # SAVE TO SCENARIO CSV
-                # ============================================
-
                 scenario_writer.writerow(row)
-
-                # ============================================
-                # SAVE TO COMBINED CSV
-                # ============================================
-
                 combined_writer.writerow(row)
-
-                # Make sure data is physically flushed
                 scenario_file.flush()
                 combined_file.flush()
 
-                # ============================================
-                # MOVE TO NEXT STATE
-                # ============================================
-
-                state = next_state
-                raw_state = next_raw_state
-
                 total_reward += reward
                 steps += 1
-
-                total_transitions += 1
-
-                # ============================================
-                # END OF EPISODE
-                # ============================================
-
+                metadata["total_transitions"] = (
+                    int(metadata.get("total_transitions", 0)) + 1
+                )
+                epsilon = max(
+                    EPSILON_MIN, epsilon * EPSILON_DECAY_PER_STEP
+                )
+                rows_written += 1
+                state, raw_state = next_state, next_raw_state
                 if terminated or truncated:
                     break
+    finally:
+        env.close()
 
-            # ------------------------------------------------
-            # END OF SCENARIO
-            # ------------------------------------------------
+    if rows_written == 0:
+        raise RuntimeError(f"Scenario {scenario} produced no RL transitions")
 
-            epsilon = max(
-                EPSILON_MIN,
-                epsilon * EPSILON_DECAY
-            )
-
-            total_scenarios_completed += 1
-
-            print()
-            print("----------------------------------------")
-            
-            print(f"SCENARIO {scenario} COMPLETE")
-            print(f"Steps       : {steps}")
-            print(f"Transitions : {steps}")
-            print(f"Total reward: {total_reward:.4f}")
-            print(f"Epsilon     : {epsilon:.4f}")
-            print(f"Q-states    : {len(q_table)}")
-            print("----------------------------------------")
-                        # ============================================
-            # SAVE Q-TABLE CHECKPOINT
-            # ============================================
-
-            os.makedirs(
-                os.path.dirname(MODEL_FILE),
-                exist_ok=True
-            )
-
-            with open(
-                MODEL_FILE,
-                "wb"
-            ) as f:
-
-                pickle.dump(
-                    q_table,
-                    f
-                )
-
-            print(
-                f"[CHECKPOINT] Q-table saved after "
-                f"scenario {scenario}"
-            )
-
-            print(
-                f"[CHECKPOINT] Q-states: "
-                f"{len(q_table)}"
-            )
-        finally:
-
-            # ------------------------------------------------
-            # CLOSE ENVIRONMENT
-            # ------------------------------------------------
-
-            if env is not None:
-                try:
-                    env.close()
-                except Exception as e:
-                    print(
-                        f"[WARNING] Environment close: {e}"
-                    )
-
-            scenario_file.close()
-
-            print(
-                f"[SAVED] {csv_file_path}"
-            )
-
-
-finally:
-
-    # ========================================================
-    # CLOSE COMBINED CSV
-    # ========================================================
-
-    combined_file.close()
-
-    # ========================================================
-    # SAVE FINAL Q-TABLE
-    # ========================================================
-
-    os.makedirs(
-        os.path.dirname(MODEL_FILE),
-        exist_ok=True
-    )
-
-    with open(
-        MODEL_FILE,
-        "wb"
-    ) as f:
-
-        pickle.dump(
-            q_table,
-            f
-        )
-
-    # ========================================================
-    # FINAL SUMMARY
-    # ========================================================
-
-    print()
-    print("==================================================")
-    print("             TRAINING FINISHED")
-    print("==================================================")
+    metadata["epsilon"] = epsilon
+    metadata["next_scenario"] = scenario + 1
+    completed = list(metadata.get("completed_scenarios", []))
+    completed.append(scenario)
+    metadata["completed_scenarios"] = completed
+    save_checkpoint(MODEL_FILE, q_table, metadata)
     print(
-        f"Scenarios completed : "
-        f"{total_scenarios_completed}/40"
+        f"[DONE] Scenario {scenario}: steps={steps}, "
+        f"reward_sum={total_reward:.4f}, epsilon={epsilon:.4f}, "
+        f"Q-states={len(q_table)}"
     )
-    print(
-        f"Total transitions   : "
-        f"{total_transitions}"
-    )
-    print(
-        f"Learned Q-states    : "
-        f"{len(q_table)}"
-    )
-    print(
-        f"Final epsilon       : "
-        f"{epsilon:.4f}"
-    )
-    print()
-    print(
-        f"Q-table saved to    : "
-        f"{MODEL_FILE}"
-    )
-    print(
-        f"Combined CSV        : "
-        f"{COMBINED_CSV}"
-    )
-    print()
-    print("Individual CSV files:")
-    print(
-        f"  {DATA_DIR}/scenario01_training.csv"
-    )
-    print(
-        f"  {DATA_DIR}/scenario02_training.csv"
-    )
-    print("  ...")
-    print(
-        f"  {DATA_DIR}/scenario40_training.csv"
-    )
-    print("==================================================")
+    print(f"[CHECKPOINT] Safely saved {MODEL_FILE}")
+
+
+def main():
+    requested_scenario = os.environ.get(SINGLE_SCENARIO_ENV)
+    if requested_scenario is not None:
+        scenario = int(requested_scenario)
+        if scenario not in range(1, 41):
+            raise ValueError(f"Training scenario must be 1-40, got {scenario}")
+        run_one_scenario(scenario)
+        return
+
+    if os.path.isfile(MODEL_FILE):
+        metadata, _q_table = load_checkpoint(MODEL_FILE)
+        first_scenario = metadata.get("next_scenario")
+        if not isinstance(first_scenario, int) or first_scenario not in range(1, 42):
+            raise ValueError(f"Invalid next_scenario in checkpoint {MODEL_FILE}")
+    else:
+        first_scenario = 1
+
+    if first_scenario == 41:
+        print(f"All 40 training scenarios are complete in {MODEL_FILE}.")
+        return
+
+    for scenario in range(first_scenario, 41):
+        child_env = os.environ.copy()
+        child_env[SINGLE_SCENARIO_ENV] = str(scenario)
+        subprocess.run([sys.executable, __file__], env=child_env, check=True)
+
+    print(f"Training complete. Checkpoint: {MODEL_FILE}")
+
+
+if __name__ == "__main__":
+    main()

@@ -9,5 +9,5 @@ Version: 3.46.1
 Requires:  ns3-bridge ns3-traffic-control
 Requires.private: 
 Cflags: -I"${includedir}"  -I/usr/include -I/usr/include/eigen3
-Libs: -L"${libdir}" -lns3.46.1-internet-default  -lns3.46.1-bridge-default -lns3.46.1-traffic-control-default -lstdc++_libbacktrace
+Libs: -L"${libdir}" -lns3.46.1-internet-default  -lns3.46.1-bridge-default -lns3.46.1-traffic-control-default -lstdc++exp
 Libs.private: -L"${libdir}" 
