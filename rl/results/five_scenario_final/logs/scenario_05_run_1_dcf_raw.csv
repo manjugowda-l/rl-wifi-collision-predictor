@@ -1,0 +1,2 @@
+scenario,run,tx_packets,rx_packets,lost_packets,packet_loss_percent,average_latency_ms,average_queue_a,average_queue_b,average_combined_queue,max_queue_a,max_queue_b,average_queue_wait_ms,mac_data_failures,mac_final_failures
+5,1,35000,34948,52,0.148571,1.54969,0,0,0,0,0,0,7068,0

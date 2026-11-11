@@ -2442,4 +2442,5 @@ scratch/CMakeFiles/scratch_wifi-ai-dcf.dir/wifi-ai-dcf.cc.o: \
  /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/flow-monitor/model/ipv6-flow-classifier.h \
  /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/include/ns3/ipv6-flow-probe.h \
  /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/flow-monitor/model/ipv6-flow-probe.h \
- /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/flow-monitor/model/ipv6-flow-classifier.h
+ /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/flow-monitor/model/ipv6-flow-classifier.h \
+ /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/wifi-scenario-config.h

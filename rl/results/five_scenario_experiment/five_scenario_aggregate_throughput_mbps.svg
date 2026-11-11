@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1120" height="620" viewBox="0 0 1120 620">
+<rect width="100%" height="100%" fill="white"/>
+<text x="560.0" y="34" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="bold">Aggregate throughput by scenario</text>
+<text x="90" y="57" text-anchor="start" font-family="Arial, sans-serif" font-size="14" font-weight="normal">Value (Mbps)</text>
+<line x1="90" y1="75.0" x2="1090" y2="75.0" stroke="#dddddd"/>
+<text x="80" y="79.0" text-anchor="end" font-family="Arial, sans-serif" font-size="11" font-weight="normal">9.1</text>
+<line x1="90" y1="162.0" x2="1090" y2="162.0" stroke="#dddddd"/>
+<text x="80" y="166.0" text-anchor="end" font-family="Arial, sans-serif" font-size="11" font-weight="normal">7.28</text>
+<line x1="90" y1="249.0" x2="1090" y2="249.0" stroke="#dddddd"/>
+<text x="80" y="253.0" text-anchor="end" font-family="Arial, sans-serif" font-size="11" font-weight="normal">5.46</text>
+<line x1="90" y1="336.0" x2="1090" y2="336.0" stroke="#dddddd"/>
+<text x="80" y="340.0" text-anchor="end" font-family="Arial, sans-serif" font-size="11" font-weight="normal">3.64</text>
+<line x1="90" y1="423.0" x2="1090" y2="423.0" stroke="#dddddd"/>
+<text x="80" y="427.0" text-anchor="end" font-family="Arial, sans-serif" font-size="11" font-weight="normal">1.82</text>
+<line x1="90" y1="510.0" x2="1090" y2="510.0" stroke="#dddddd"/>
+<text x="80" y="514.0" text-anchor="end" font-family="Arial, sans-serif" font-size="11" font-weight="normal">0</text>
+<rect x="123.0" y="318.4" width="40.0" height="191.6" fill="#4472C4"/>
+<text x="143.0" y="314.4185425501374" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="normal">4.01</text>
+<rect x="170.0" y="318.4" width="40.0" height="191.6" fill="#ED7D31"/>
+<text x="190.0" y="314.4185425501374" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="normal">4.01</text>
+<rect x="217.0" y="318.3" width="40.0" height="191.7" fill="#70AD47"/>
+<text x="237.0" y="314.30186134229234" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="normal">4.01</text>
+<text x="190.0" y="533" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="normal">Scenario 1</text>
+<rect x="323.0" y="133.7" width="40.0" height="376.3" fill="#4472C4"/>
+<text x="343.0" y="129.67632540601386" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="normal">7.87</text>
+<rect x="370.0" y="132.8" width="40.0" height="377.2" fill="#ED7D31"/>
+<text x="390.0" y="128.83612506919496" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="normal">7.89</text>
+<rect x="417.0" y="131.7" width="40.0" height="378.3" fill="#70AD47"/>
+<text x="437.0" y="127.73913043478262" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="normal">7.91</text>
+<text x="390.0" y="533" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="normal">Scenario 2</text>
+<rect x="523.0" y="348.1" width="40.0" height="161.9" fill="#4472C4"/>
+<text x="543.0" y="344.05595190412487" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="normal">3.39</text>
+<rect x="570.0" y="348.1" width="40.0" height="161.9" fill="#ED7D31"/>
+<text x="590.0" y="344.05595190412487" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="normal">3.39</text>
+<rect x="617.0" y="348.0" width="40.0" height="162.0" fill="#70AD47"/>
+<text x="637.0" y="344.0481572168794" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="normal">3.39</text>
+<text x="590.0" y="533" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="normal">Scenario 3</text>
+<rect x="723.0" y="137.9" width="40.0" height="372.1" fill="#4472C4"/>
+<text x="743.0" y="133.9481009374897" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="normal">7.78</text>
+<rect x="770.0" y="137.9" width="40.0" height="372.1" fill="#ED7D31"/>
+<text x="790.0" y="133.9481009374897" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="normal">7.78</text>
+<rect x="817.0" y="142.1" width="40.0" height="367.9" fill="#70AD47"/>
+<text x="837.0" y="138.13427836976757" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="normal">7.69</text>
+<text x="790.0" y="533" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="normal">Scenario 4</text>
+<rect x="923.0" y="348.0" width="40.0" height="162.0" fill="#4472C4"/>
+<text x="943.0" y="344.0483006773809" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="normal">3.39</text>
+<rect x="970.0" y="348.0" width="40.0" height="162.0" fill="#ED7D31"/>
+<text x="990.0" y="344.0483006773809" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="normal">3.39</text>
+<rect x="1017.0" y="348.0" width="40.0" height="162.0" fill="#70AD47"/>
+<text x="1037.0" y="344.0483006773809" text-anchor="middle" font-family="Arial, sans-serif" font-size="9" font-weight="normal">3.39</text>
+<text x="990.0" y="533" text-anchor="middle" font-family="Arial, sans-serif" font-size="12" font-weight="normal">Scenario 5</text>
+<rect x="315.0" y="574" width="14" height="14" fill="#4472C4"/>
+<text x="335.0" y="587" text-anchor="start" font-family="Arial, sans-serif" font-size="12" font-weight="normal">DCF</text>
+<rect x="485.0" y="574" width="14" height="14" fill="#ED7D31"/>
+<text x="505.0" y="587" text-anchor="start" font-family="Arial, sans-serif" font-size="12" font-weight="normal">EDCA</text>
+<rect x="655.0" y="574" width="14" height="14" fill="#70AD47"/>
+<text x="675.0" y="587" text-anchor="start" font-family="Arial, sans-serif" font-size="12" font-weight="normal">RL Adaptive DCF</text>
+</svg>

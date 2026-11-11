@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="980" viewBox="0 0 1200 980">
+<rect width="100%" height="100%" fill="white"/>
+<text x="600.0" y="35" text-anchor="middle" font-family="Arial, sans-serif" font-size="22" font-weight="bold">Unweighted means across the same five scenarios</text>
+<text x="300.0" y="78" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="bold">Transmitted packets (packets)</text>
+<line x1="65.0" y1="230" x2="565.0" y2="230" stroke="#666"/>
+<rect x="120.8" y="124.1" width="55" height="105.9" fill="#4472C4"/>
+<text x="148.33333333333331" y="120.06779661016948" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">2.5e+04</text>
+<text x="148.33333333333331" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">DCF</text>
+<rect x="287.5" y="124.1" width="55" height="105.9" fill="#ED7D31"/>
+<text x="315.0" y="120.06779661016948" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">2.5e+04</text>
+<text x="315.0" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">EDCA</text>
+<rect x="454.2" y="124.1" width="55" height="105.9" fill="#70AD47"/>
+<text x="481.6666666666667" y="120.06779661016948" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">2.5e+04</text>
+<text x="481.6666666666667" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">RL Adaptive</text>
+<text x="900.0" y="78" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="bold">Received packets (packets)</text>
+<line x1="665.0" y1="230" x2="1165.0" y2="230" stroke="#666"/>
+<rect x="720.8" y="124.3" width="55" height="105.7" fill="#4472C4"/>
+<text x="748.3333333333334" y="120.295726181205" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">2.46e+04</text>
+<text x="748.3333333333334" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">DCF</text>
+<rect x="887.5" y="124.2" width="55" height="105.8" fill="#ED7D31"/>
+<text x="915.0" y="120.20197401802436" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">2.46e+04</text>
+<text x="915.0" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">EDCA</text>
+<rect x="1054.2" y="124.1" width="55" height="105.9" fill="#70AD47"/>
+<text x="1081.6666666666667" y="120.06779661016948" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">2.46e+04</text>
+<text x="1081.6666666666667" y="248" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">RL Adaptive</text>
+<text x="300.0" y="298" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="bold">Lost packets (packets)</text>
+<line x1="65.0" y1="450" x2="565.0" y2="450" stroke="#666"/>
+<rect x="120.8" y="344.1" width="55" height="105.9" fill="#4472C4"/>
+<text x="148.33333333333331" y="340.06779661016947" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">422</text>
+<text x="148.33333333333331" y="468" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">DCF</text>
+<rect x="287.5" y="349.5" width="55" height="100.5" fill="#ED7D31"/>
+<text x="315.0" y="345.54271845440445" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">400</text>
+<text x="315.0" y="468" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">EDCA</text>
+<rect x="454.2" y="357.4" width="55" height="92.6" fill="#70AD47"/>
+<text x="481.6666666666667" y="353.3783864149609" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">369</text>
+<text x="481.6666666666667" y="468" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">RL Adaptive</text>
+<text x="900.0" y="298" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="bold">Packet-loss percentage (%)</text>
+<line x1="665.0" y1="450" x2="1165.0" y2="450" stroke="#666"/>
+<rect x="720.8" y="344.1" width="55" height="105.9" fill="#4472C4"/>
+<text x="748.3333333333334" y="340.06779661016947" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">1.11</text>
+<text x="748.3333333333334" y="468" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">DCF</text>
+<rect x="887.5" y="348.3" width="55" height="101.7" fill="#ED7D31"/>
+<text x="915.0" y="344.27287998057534" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">1.07</text>
+<text x="915.0" y="468" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">EDCA</text>
+<rect x="1054.2" y="354.8" width="55" height="95.2" fill="#70AD47"/>
+<text x="1081.6666666666667" y="350.78612160530514" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">1</text>
+<text x="1081.6666666666667" y="468" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">RL Adaptive</text>
+<text x="300.0" y="518" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="bold">Average end-to-end latency (ms)</text>
+<line x1="65.0" y1="670" x2="565.0" y2="670" stroke="#666"/>
+<rect x="120.8" y="564.2" width="55" height="105.8" fill="#4472C4"/>
+<text x="148.33333333333331" y="560.1887292656621" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">137</text>
+<text x="148.33333333333331" y="688" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">DCF</text>
+<rect x="287.5" y="564.1" width="55" height="105.9" fill="#ED7D31"/>
+<text x="315.0" y="560.0677966101695" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">137</text>
+<text x="315.0" y="688" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">EDCA</text>
+<rect x="454.2" y="587.1" width="55" height="82.9" fill="#70AD47"/>
+<text x="481.6666666666667" y="583.0878608609069" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">108</text>
+<text x="481.6666666666667" y="688" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">RL Adaptive</text>
+<text x="900.0" y="518" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="bold">Flow 1 throughput (Mbps)</text>
+<line x1="665.0" y1="670" x2="1165.0" y2="670" stroke="#666"/>
+<rect x="720.8" y="564.4" width="55" height="105.6" fill="#4472C4"/>
+<text x="748.3333333333334" y="560.4359191672837" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">2.38</text>
+<text x="748.3333333333334" y="688" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">DCF</text>
+<rect x="887.5" y="564.3" width="55" height="105.7" fill="#ED7D31"/>
+<text x="915.0" y="560.2785199346202" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">2.38</text>
+<text x="915.0" y="688" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">EDCA</text>
+<rect x="1054.2" y="564.1" width="55" height="105.9" fill="#70AD47"/>
+<text x="1081.6666666666667" y="560.0677966101695" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">2.39</text>
+<text x="1081.6666666666667" y="688" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">RL Adaptive</text>
+<text x="300.0" y="738" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="bold">Flow 2 throughput (Mbps)</text>
+<line x1="65.0" y1="890" x2="565.0" y2="890" stroke="#666"/>
+<rect x="120.8" y="784.1" width="55" height="105.9" fill="#4472C4"/>
+<text x="148.33333333333331" y="780.08902113468" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">1.62</text>
+<text x="148.33333333333331" y="908" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">DCF</text>
+<rect x="287.5" y="784.1" width="55" height="105.9" fill="#ED7D31"/>
+<text x="315.0" y="780.08902113468" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">1.62</text>
+<text x="315.0" y="908" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">EDCA</text>
+<rect x="454.2" y="784.1" width="55" height="105.9" fill="#70AD47"/>
+<text x="481.6666666666667" y="780.0677966101695" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">1.62</text>
+<text x="481.6666666666667" y="908" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">RL Adaptive</text>
+<text x="900.0" y="738" text-anchor="middle" font-family="Arial, sans-serif" font-size="15" font-weight="bold">Aggregate throughput (Mbps)</text>
+<line x1="665.0" y1="890" x2="1165.0" y2="890" stroke="#666"/>
+<rect x="720.8" y="784.3" width="55" height="105.7" fill="#4472C4"/>
+<text x="748.3333333333334" y="780.2956964931543" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">4</text>
+<text x="748.3333333333334" y="908" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">DCF</text>
+<rect x="887.5" y="784.2" width="55" height="105.8" fill="#ED7D31"/>
+<text x="915.0" y="780.2019209747689" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">4</text>
+<text x="915.0" y="908" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">EDCA</text>
+<rect x="1054.2" y="784.1" width="55" height="105.9" fill="#70AD47"/>
+<text x="1081.6666666666667" y="780.0677966101695" text-anchor="middle" font-family="Arial, sans-serif" font-size="11" font-weight="normal">4.01</text>
+<text x="1081.6666666666667" y="908" text-anchor="middle" font-family="Arial, sans-serif" font-size="10" font-weight="normal">RL Adaptive</text>
+<rect x="365.0" y="943" width="14" height="14" fill="#4472C4"/>
+<text x="385.0" y="955" text-anchor="start" font-family="Arial, sans-serif" font-size="12" font-weight="normal">DCF</text>
+<rect x="525.0" y="943" width="14" height="14" fill="#ED7D31"/>
+<text x="545.0" y="955" text-anchor="start" font-family="Arial, sans-serif" font-size="12" font-weight="normal">EDCA</text>
+<rect x="685.0" y="943" width="14" height="14" fill="#70AD47"/>
+<text x="705.0" y="955" text-anchor="start" font-family="Arial, sans-serif" font-size="12" font-weight="normal">RL Adaptive DCF</text>
+</svg>

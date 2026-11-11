@@ -1,0 +1,20 @@
+{
+  "complete": true,
+  "completed_rows": 15,
+  "config": {
+    "checkpoint": "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/rl/q_table_v2.json",
+    "checkpoint_sha256": "c05335b5ea7d37ab2507da28b0f1190a4360c847ec6e54442d4ab8e0eba6eb25",
+    "measurement_start_seconds": 1.0,
+    "payload_bytes": 1200,
+    "run": 1,
+    "scenarios": [
+      1,
+      2,
+      3,
+      4,
+      5
+    ],
+    "seed": 12345,
+    "simulation_seconds": 60.0
+  }
+}

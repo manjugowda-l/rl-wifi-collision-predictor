@@ -1,0 +1,6 @@
+scenario_id,scenario_name,source_scenario_id,workload_description,flow1_bytes,flow1_rate,flow1_start_s,flow2_bytes,flow2_rate,flow2_start_s,flow2_burst_bytes,flow2_burst_rate,flow2_burst_start_s,measurement_start_s,run,seed
+1,scenario_01,5,"Original scenario 5: simultaneous 10 MB, 40 Mbps flows; B burst at 6 s.",10000000,40Mbps,1.0,10000000,40Mbps,1.0,10000000,10Mbps,6.0,1.0,1,12345
+2,scenario_02,18,Original scenario 18: simultaneous asymmetric high load.,40000000,40Mbps,1.0,20000000,20Mbps,1.0,0,,0.0,1.0,1,12345
+3,scenario_03,24,Original scenario 24: A-heavy load with delayed B.,20000000,20Mbps,1.0,5000000,5Mbps,5.0,0,,0.0,1.0,1,12345
+4,scenario_04,17,"Original scenario 17: symmetric 30 MB, 30 Mbps simultaneous stress load.",30000000,30Mbps,1.0,30000000,30Mbps,1.0,0,,0.0,1.0,1,12345
+5,scenario_05,23,Original scenario 23: A starts at 1 s; B-heavy flow starts at 5 s.,5000000,5Mbps,1.0,20000000,20Mbps,5.0,0,,0.0,1.0,1,12345

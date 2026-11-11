@@ -19,12 +19,15 @@
 #include "ns3/applications-module.h"
 
 #include "ns3/flow-monitor-module.h"
+#include "ns3/ap-wifi-mac.h"
+#include "wifi-scenario-config.h"
 
 
 
 #include <fstream>
 
 #include <iostream>
+#include <cstdlib>
 
 #include <unordered_map>
 
@@ -85,6 +88,25 @@ uint32_t NormalizeCw(uint32_t cw)
         }
     }
     return normalized;
+}
+
+uint32_t GetAdvertisedCw(Ptr<ApWifiMac> apMac, const std::string& attributeName)
+{
+    NS_ABORT_MSG_IF(!apMac, "Cannot read AP CW attribute without an AP MAC");
+    ApWifiMac::UintAccessParamsMapValue attributeValue;
+    apMac->GetAttribute(attributeName, attributeValue);
+    for (const auto& [accessCategory, values] : attributeValue.Get())
+    {
+        if (accessCategory == AC_BE)
+        {
+            NS_ABORT_MSG_IF(values.size() != 1,
+                            "Expected one AC_BE value in AP attribute "
+                                << attributeName << ", got " << values.size());
+            return static_cast<uint32_t>(values.front());
+        }
+    }
+    NS_ABORT_MSG("AP attribute " << attributeName << " has no AC_BE value");
+    return 0;
 }
 
 
@@ -920,6 +942,7 @@ class WifiAiDcfEnv : public OpenGymEnv
     WifiAiDcfEnv(
         Ptr<WifiMac> macA,
         Ptr<WifiMac> macB,
+        Ptr<ApWifiMac> apMac,
         Ptr<WifiMacQueue> queueA,
         Ptr<WifiMacQueue> queueB,
         Ptr<FlowMonitor> flowMonitor);
@@ -1004,6 +1027,16 @@ class WifiAiDcfEnv : public OpenGymEnv
     ApplyAction(
         uint32_t action);
 
+    void
+    SetCwLimits(
+        uint32_t cw);
+
+    void
+    VerifyCwLimits(
+        const std::string& context) const;
+
+    void
+    ResyncStationsToAdvertisedCw();
 
 
     Ptr<Txop>
@@ -1020,6 +1053,7 @@ class WifiAiDcfEnv : public OpenGymEnv
 
     Ptr<WifiMac> m_macB;
 
+    Ptr<ApWifiMac> m_apMac;
 
 
     Ptr<WifiMacQueue> m_queueA;
@@ -1034,6 +1068,7 @@ class WifiAiDcfEnv : public OpenGymEnv
 
     Ptr<Txop> m_txopB;
 
+    Ptr<Txop> m_txopAp;
 
 
     // ========================================================
@@ -1062,7 +1097,7 @@ class WifiAiDcfEnv : public OpenGymEnv
 
     float m_macFailures;
 
-
+    float m_macFinalFailures;
 
     float m_currentCw;
 
@@ -1149,16 +1184,19 @@ class WifiAiDcfEnv : public OpenGymEnv
 WifiAiDcfEnv::WifiAiDcfEnv(
     Ptr<WifiMac> macA,
     Ptr<WifiMac> macB,
+    Ptr<ApWifiMac> apMac,
     Ptr<WifiMacQueue> queueA,
     Ptr<WifiMacQueue> queueB,
     Ptr<FlowMonitor> flowMonitor)
     : m_macA(macA),
       m_macB(macB),
+      m_apMac(apMac),
       m_queueA(queueA),
       m_queueB(queueB),
       m_flowMonitor(flowMonitor),
       m_txopA(nullptr),
       m_txopB(nullptr),
+      m_txopAp(nullptr),
 
       m_queueLengthA(0.0f),
 
@@ -1171,6 +1209,8 @@ WifiAiDcfEnv::WifiAiDcfEnv(
       m_packetLoss(0.0f),
 
       m_macFailures(0.0f),
+
+      m_macFinalFailures(0.0f),
 
       m_currentCw(static_cast<float>(CW_MIN_LIMIT)),
 
@@ -1224,6 +1264,8 @@ WifiAiDcfEnv::WifiAiDcfEnv(
     m_txopB =
 
         GetDcfTxop(m_macB);
+
+    m_txopAp = GetDcfTxop(m_apMac);
 
 }
 
@@ -1607,6 +1649,9 @@ WifiAiDcfEnv::GetExtraInfo()
 
             m_macFailures);
 
+    info["macFinalFailures"] =
+        std::to_string(m_macFinalFailures);
+
 
 
     info["currentCW"] =
@@ -1726,27 +1771,16 @@ WifiAiDcfEnv::ExecuteActions(
 bool
 WifiAiDcfEnv::ApplyAction(uint32_t action)
 {
-    if (!m_txopA || !m_txopB)
+    if (!m_txopA || !m_txopB || !m_txopAp || !m_apMac)
     {
         std::cerr
-            << "[RL-ACTION] ERROR: Txop unavailable"
+            << "[RL-ACTION] ERROR: AP or station AC_BE Txop unavailable"
             << std::endl;
 
         return false;
     }
 
-    const uint32_t oldCw =
-        NormalizeCw(m_txopA->GetMinCw());
-    if (m_txopA->GetMinCw() != oldCw ||
-        m_txopB->GetMinCw() != oldCw ||
-        m_txopA->GetMaxCw() != CW_MAX_LIMIT ||
-        m_txopB->GetMaxCw() != CW_MAX_LIMIT)
-    {
-        m_txopA->SetMaxCw(CW_MAX_LIMIT);
-        m_txopA->SetMinCw(oldCw);
-        m_txopB->SetMaxCw(CW_MAX_LIMIT);
-        m_txopB->SetMinCw(oldCw);
-    }
+    const uint32_t oldCw = static_cast<uint32_t>(m_currentCw);
 
     uint32_t newCw = oldCw;
 
@@ -1781,36 +1815,120 @@ WifiAiDcfEnv::ApplyAction(uint32_t action)
         return false;
     }
 
-    m_txopA->SetMaxCw(CW_MAX_LIMIT);
-    m_txopA->SetMinCw(newCw);
-    m_txopB->SetMaxCw(CW_MAX_LIMIT);
-    m_txopB->SetMinCw(newCw);
-
-
-
     m_currentCw =
 
         static_cast<float>(newCw);
 
-
+    SetCwLimits(newCw);
+    VerifyCwLimits("after action");
+    const uint32_t advertisedMin = GetAdvertisedCw(m_apMac, "CwMinsForSta");
+    const uint32_t advertisedMax = GetAdvertisedCw(m_apMac, "CwMaxsForSta");
 
     std::cout
 
         << "[RL-ACTION]"
 
         << " action=" << action
-
-        << " | CW: "
-
-        << oldCw
-
-        << " -> "
-
-        << newCw
+        << " | requestedCW=" << newCw
+        << " | APmin/max=" << m_txopAp->GetMinCw() << "/"
+        << m_txopAp->GetMaxCw()
+        << " | advertisedBEmin/max=" << advertisedMin << "/"
+        << advertisedMax
+        << " | STA_Amin/max=" << m_txopA->GetMinCw() << "/"
+        << m_txopA->GetMaxCw()
+        << " | STA_Bmin/max=" << m_txopB->GetMinCw() << "/"
+        << m_txopB->GetMaxCw()
+        << " | activeSTA_A_CW=" << m_txopA->GetCw(0)
+        << " | activeSTA_B_CW=" << m_txopB->GetCw(0)
 
         << std::endl;
 
     return true;
+}
+
+void
+WifiAiDcfEnv::SetCwLimits(uint32_t cw)
+{
+    NS_ABORT_MSG_IF(!m_txopAp || !m_txopA || !m_txopB,
+                    "AP or station AC_BE Txop unavailable");
+    m_txopAp->SetMaxCw(CW_MAX_LIMIT);
+    m_txopAp->SetMinCw(cw);
+    m_apMac->SetAttribute(
+        "CwMinsForSta",
+        StringValue("BE " + std::to_string(cw)));
+    m_apMac->SetAttribute(
+        "CwMaxsForSta",
+        StringValue("BE " + std::to_string(CW_MAX_LIMIT)));
+    m_txopA->SetMaxCw(CW_MAX_LIMIT);
+    m_txopA->SetMinCw(cw);
+    m_txopB->SetMaxCw(CW_MAX_LIMIT);
+    m_txopB->SetMinCw(cw);
+}
+
+void
+WifiAiDcfEnv::VerifyCwLimits(const std::string& context) const
+{
+    NS_ABORT_MSG_IF(!m_apMac || !m_txopAp || !m_txopA || !m_txopB,
+                    "Cannot verify CW settings without AP and station AC_BE Txops");
+    const uint32_t advertisedMin = GetAdvertisedCw(m_apMac, "CwMinsForSta");
+    const uint32_t advertisedMax = GetAdvertisedCw(m_apMac, "CwMaxsForSta");
+    const uint32_t expected = static_cast<uint32_t>(m_currentCw);
+    NS_ABORT_MSG_IF(
+        m_txopAp->GetMinCw() != expected ||
+            m_txopAp->GetMaxCw() != CW_MAX_LIMIT ||
+            advertisedMin != expected ||
+            advertisedMax != CW_MAX_LIMIT ||
+            m_txopA->GetMinCw() != expected ||
+            m_txopA->GetMaxCw() != CW_MAX_LIMIT ||
+            m_txopB->GetMinCw() != expected ||
+            m_txopB->GetMaxCw() != CW_MAX_LIMIT,
+        "AC_BE CW mismatch " << context << ": expected min/max="
+                             << expected << "/" << CW_MAX_LIMIT
+                             << ", AP=" << m_txopAp->GetMinCw() << "/"
+                             << m_txopAp->GetMaxCw()
+                             << ", advertised BE min/max="
+                             << advertisedMin << "/"
+                             << advertisedMax
+                             << ", STA A=" << m_txopA->GetMinCw() << "/"
+                             << m_txopA->GetMaxCw()
+                             << ", STA B=" << m_txopB->GetMinCw() << "/"
+                             << m_txopB->GetMaxCw());
+}
+
+void
+WifiAiDcfEnv::ResyncStationsToAdvertisedCw()
+{
+    NS_ABORT_MSG_IF(!m_apMac || !m_txopAp || !m_txopA || !m_txopB,
+                    "Cannot synchronize station CW without AP and station AC_BE Txops");
+    const uint32_t expected = static_cast<uint32_t>(m_currentCw);
+    const uint32_t advertisedMin = GetAdvertisedCw(m_apMac, "CwMinsForSta");
+    const uint32_t advertisedMax = GetAdvertisedCw(m_apMac, "CwMaxsForSta");
+    NS_ABORT_MSG_IF(m_txopAp->GetMinCw() != expected ||
+                        m_txopAp->GetMaxCw() != CW_MAX_LIMIT ||
+                        advertisedMin != expected ||
+                        advertisedMax != CW_MAX_LIMIT,
+                    "Cannot synchronize stations: AP AC_BE CW differs from the selected "
+                        << expected << "/" << CW_MAX_LIMIT);
+
+    if (m_txopA->GetMinCw() == expected &&
+        m_txopA->GetMaxCw() == CW_MAX_LIMIT &&
+        m_txopB->GetMinCw() == expected &&
+        m_txopB->GetMaxCw() == CW_MAX_LIMIT)
+    {
+        return;
+    }
+
+    std::cout << "[CW-STA-RESYNC] t=" << Simulator::Now().GetSeconds()
+              << " | selected=" << expected
+              << " | advertisedBE=" << advertisedMin << "/" << advertisedMax
+              << " | STA_A=" << m_txopA->GetMinCw() << "/"
+              << m_txopA->GetMaxCw()
+              << " | STA_B=" << m_txopB->GetMinCw() << "/"
+              << m_txopB->GetMaxCw() << std::endl;
+    m_txopA->SetMaxCw(CW_MAX_LIMIT);
+    m_txopA->SetMinCw(expected);
+    m_txopB->SetMaxCw(CW_MAX_LIMIT);
+    m_txopB->SetMinCw(expected);
 }
 
 
@@ -1922,6 +2040,11 @@ WifiAiDcfEnv::UpdateState()
     m_macFailures =
 
         static_cast<float>(intervalFailures);
+
+    const uint64_t intervalFinalFailures =
+        macFinalDataFailures - previousMacFinalDataFailures;
+    previousMacFinalDataFailures = macFinalDataFailures;
+    m_macFinalFailures = static_cast<float>(intervalFinalFailures);
 
 
 
@@ -2046,26 +2169,7 @@ WifiAiDcfEnv::UpdateState()
 
     // ========================================================
 
-    // 7. SELECTED CONTENTION-WINDOW MINIMUM
-
-    // ========================================================
-
-
-
-    if (m_txopA && m_txopB)
-    {
-        const uint32_t actualCw =
-            NormalizeCw(m_txopA->GetMinCw());
-        m_txopA->SetMaxCw(CW_MAX_LIMIT);
-        m_txopA->SetMinCw(actualCw);
-        m_txopB->SetMaxCw(CW_MAX_LIMIT);
-        m_txopB->SetMinCw(actualCw);
-        m_currentCw = static_cast<float>(actualCw);
-    }
-
-    // ========================================================
-
-    // 8. REAL RL REWARD
+    // 7. REAL RL REWARD
 
     //
 
@@ -2092,18 +2196,10 @@ WifiAiDcfEnv::UpdateState()
     m_reward = 0.0f;
 
     const float throughputScore =
-        std::clamp(m_throughputMbps / 20.0f, 0.0f, 1.0f);
-    const uint64_t intervalLossDenominator =
-        intervalTxPackets + intervalLostPackets;
-    const float lossScore =
-        intervalLossDenominator > 0
-            ? std::clamp(
-                  static_cast<float>(intervalLostPackets) /
-                      static_cast<float>(intervalLossDenominator),
-                  0.0f, 1.0f)
-            : 0.0f;
+        std::clamp(m_throughputMbps / 60.0f, 0.0f, 1.0f);
+    const float lossScore = std::clamp(m_packetLoss, 0.0f, 1.0f);
     const float latencyScore = m_latencyMs >= 0.0f
-                                   ? std::clamp(m_latencyMs / 250.0f, 0.0f, 1.0f)
+                                   ? std::clamp(m_latencyMs / 2000.0f, 0.0f, 1.0f)
                                    : 0.0f;
     const float macAttempts =
         static_cast<float>(intervalFailures + intervalSuccessful);
@@ -2113,14 +2209,14 @@ WifiAiDcfEnv::UpdateState()
                          0.0f, 1.0f)
             : 0.0f;
     const float queueScore =
-        std::clamp((m_queueLengthA + m_queueLengthB) / 100.0f, 0.0f, 1.0f);
+        std::clamp((m_queueLengthA + m_queueLengthB) / 512.0f, 0.0f, 1.0f);
     const float queueGrowthScore =
-        std::clamp(std::max(0.0f, m_queueGrowthA + m_queueGrowthB) / 20.0f,
+        std::clamp(std::max(0.0f, m_queueGrowthA + m_queueGrowthB) / 100.0f,
                    0.0f, 1.0f);
 
     m_reward = std::clamp(
-        0.40f * throughputScore - 0.25f * lossScore -
-            0.15f * latencyScore - 0.10f * queueScore -
+        0.40f * throughputScore - 0.20f * lossScore -
+            0.20f * latencyScore - 0.10f * queueScore -
             0.05f * queueGrowthScore - 0.05f * failureScore,
         -1.0f, 1.0f);
 
@@ -2182,6 +2278,10 @@ WifiAiDcfEnv::UpdateState()
 
         << m_macFailures
 
+        << " | MACFinalFail="
+
+        << m_macFinalFailures
+
         << " | CW="
 
         << m_currentCw
@@ -2199,6 +2299,15 @@ WifiAiDcfEnv::UpdateState()
         << " | Reward="
 
         << m_reward
+
+        << " | RewardComponents(throughput/loss/latency/queue/growth/retry)="
+
+        << throughputScore << "/"
+        << lossScore << "/"
+        << latencyScore << "/"
+        << queueScore << "/"
+        << queueGrowthScore << "/"
+        << failureScore
 
         << std::endl;
 
@@ -2222,6 +2331,20 @@ WifiAiDcfEnv::DecisionStep()
 
     static uint64_t rlStep = 0;
 
+    ResyncStationsToAdvertisedCw();
+    VerifyCwLimits("decision boundary");
+    const uint32_t advertisedMin = GetAdvertisedCw(m_apMac, "CwMinsForSta");
+    const uint32_t advertisedMax = GetAdvertisedCw(m_apMac, "CwMaxsForSta");
+    std::cout << "[CW-VERIFY] t=" << Simulator::Now().GetSeconds()
+              << " | selected=" << m_currentCw
+              << " | AP=" << m_txopAp->GetMinCw() << "/"
+              << m_txopAp->GetMaxCw()
+              << " | advertisedBE=" << advertisedMin << "/"
+              << advertisedMax
+              << " | STA_A=" << m_txopA->GetMinCw() << "/"
+              << m_txopA->GetMaxCw()
+              << " | STA_B=" << m_txopB->GetMinCw() << "/"
+              << m_txopB->GetMaxCw() << std::endl;
 
 
     if (Simulator::Now().GetSeconds() >=
@@ -2315,11 +2438,15 @@ WifiAiDcfEnv::Start()
         m_txopB->SetMinCw(initialCw);
     }
 
-
+    SetCwLimits(initialCw);
 
     m_currentCw =
 
         static_cast<float>(initialCw);
+
+    VerifyCwLimits("initialization");
+    const uint32_t advertisedMin = GetAdvertisedCw(m_apMac, "CwMinsForSta");
+    const uint32_t advertisedMax = GetAdvertisedCw(m_apMac, "CwMaxsForSta");
 
 
 
@@ -2330,6 +2457,14 @@ WifiAiDcfEnv::Start()
         << " Real DCF CW = "
 
         << initialCw
+
+        << " | AP-advertised AC_BE min/max = "
+
+        << advertisedMin
+
+        << "/"
+
+        << advertisedMax
 
         << std::endl;
 
@@ -2363,6 +2498,8 @@ main(int argc, char* argv[])
 
     uint32_t runNumber = 1;
 
+    uint32_t seed = 12345;
+
 
 
     CommandLine cmd(__FILE__);
@@ -2380,12 +2517,16 @@ main(int argc, char* argv[])
 
 
     cmd.AddValue(
-
         "run",
 
         "Random run number",
 
         runNumber);
+
+    cmd.AddValue(
+        "seed",
+        "ns-3 random seed",
+        seed);
 
 
 
@@ -2422,8 +2563,7 @@ main(int argc, char* argv[])
 
 
     RngSeedManager::SetSeed(
-
-        12345);
+        seed);
 
 
 
@@ -2742,9 +2882,9 @@ main(int argc, char* argv[])
 
     {
 
-        trafficA = {2 * 1000 * 1000, "2Mbps", 1.0};
+        trafficA = {10 * 1000 * 1000, "40Mbps", 1.0};
 
-        trafficB = {2 * 1000 * 1000, "2Mbps", 5.0};
+        trafficB = {10 * 1000 * 1000, "40Mbps", 1.0};
 
         measurementStartTime = 1.0;
 
@@ -2754,9 +2894,9 @@ main(int argc, char* argv[])
 
     {
 
-        trafficA = {5 * 1000 * 1000, "10Mbps", 1.0};
+        trafficA = {40 * 1000 * 1000, "40Mbps", 1.0};
 
-        trafficB = {5 * 1000 * 1000, "10Mbps", 1.0};
+        trafficB = {20 * 1000 * 1000, "20Mbps", 1.0};
 
         measurementStartTime = 1.0;
 
@@ -2766,9 +2906,9 @@ main(int argc, char* argv[])
 
     {
 
-        trafficA = {4 * 1000 * 1000, "2Mbps", 1.0};
+        trafficA = {20 * 1000 * 1000, "20Mbps", 1.0};
 
-        trafficB = {12 * 1000 * 1000, "20Mbps", 3.0};
+        trafficB = {5 * 1000 * 1000, "5Mbps", 5.0};
 
         measurementStartTime = 1.0;
 
@@ -2778,9 +2918,9 @@ main(int argc, char* argv[])
 
     {
 
-        trafficA = {20 * 1000 * 1000, "20Mbps", 1.0};
+        trafficA = {15 * 1000 * 1000, "15Mbps", 1.0};
 
-        trafficB = {20 * 1000 * 1000, "20Mbps", 1.0};
+        trafficB = {10 * 1000 * 1000, "10Mbps", 1.0};
 
         measurementStartTime = 1.0;
 
@@ -2790,9 +2930,9 @@ main(int argc, char* argv[])
 
     {
 
-        trafficA = {10 * 1000 * 1000, "40Mbps", 1.0};
+        trafficA = {5 * 1000 * 1000, "20Mbps", 1.0};
 
-        trafficB = {10 * 1000 * 1000, "40Mbps", 1.0};
+        trafficB = {5 * 1000 * 1000, "20Mbps", 1.0};
 
         measurementStartTime = 1.0;
 
@@ -3218,6 +3358,15 @@ main(int argc, char* argv[])
 
     }
 
+    const auto& sharedScenario = wifi_scenario::Get(scenario);
+    trafficA = {sharedScenario.flowA.totalBytes,
+                sharedScenario.flowA.dataRate,
+                sharedScenario.flowA.startTime};
+    trafficB = {sharedScenario.flowB.totalBytes,
+                sharedScenario.flowB.dataRate,
+                sharedScenario.flowB.startTime};
+    measurementStartTime = sharedScenario.measurementStartTime;
+
 
 
     // ========================================================
@@ -3422,7 +3571,7 @@ main(int argc, char* argv[])
 
 
 
-    if (scenario == 5)
+    if (sharedScenario.extraFlowB.totalBytes > 0)
 
     {
 
@@ -3430,11 +3579,11 @@ main(int argc, char* argv[])
 
             {
 
-                10 * 1000 * 1000,
+                sharedScenario.extraFlowB.totalBytes,
 
-                "10Mbps",
+                sharedScenario.extraFlowB.dataRate,
 
-                6.0
+                sharedScenario.extraFlowB.startTime
 
             };
 
@@ -3452,13 +3601,9 @@ main(int argc, char* argv[])
 
 
 
-        std::cout
-
-            << "STA B second burst: "
-
-            << "10 MB, 10Mbps, 1200 B packets, start 6 s"
-
-            << std::endl;
+        PrintTraffic(
+            "STA B second burst",
+            secondBurst);
 
     }
 
@@ -3498,7 +3643,17 @@ main(int argc, char* argv[])
 
         wifiStaB->GetMac();
 
-
+    Ptr<WifiNetDevice> wifiAp =
+        DynamicCast<WifiNetDevice>(apDevice.Get(0));
+    Ptr<ApWifiMac> macAp =
+        wifiAp ? DynamicCast<ApWifiMac>(wifiAp->GetMac()) : nullptr;
+    if (!macAp || !macAp->GetQosSupported())
+    {
+        std::cerr << "[DCF] ERROR: AP QoS MAC unavailable for AC_BE CW "
+                     "advertisement"
+                  << std::endl;
+        return 1;
+    }
 
     // ========================================================
 
@@ -3535,11 +3690,41 @@ main(int argc, char* argv[])
         return 1;
     }
 
+    Ptr<Txop> txopAp = macAp->GetQosTxop(AC_BE);
+    if (!txopAp)
+    {
+        std::cerr << "[DCF] ERROR: AP AC_BE Txop unavailable" << std::endl;
+        return 1;
+    }
+
     const uint32_t initialCw = NormalizeCw(txopA->GetMinCw());
+    txopAp->SetMaxCw(CW_MAX_LIMIT);
+    txopAp->SetMinCw(initialCw);
+    macAp->SetAttribute(
+        "CwMinsForSta",
+        StringValue("BE " + std::to_string(initialCw)));
+    macAp->SetAttribute(
+        "CwMaxsForSta",
+        StringValue("BE " + std::to_string(CW_MAX_LIMIT)));
     txopA->SetMaxCw(CW_MAX_LIMIT);
     txopA->SetMinCw(initialCw);
     txopB->SetMaxCw(CW_MAX_LIMIT);
     txopB->SetMinCw(initialCw);
+
+    const uint32_t initialAdvertisedMin =
+        GetAdvertisedCw(macAp, "CwMinsForSta");
+    const uint32_t initialAdvertisedMax =
+        GetAdvertisedCw(macAp, "CwMaxsForSta");
+    NS_ABORT_MSG_IF(initialAdvertisedMin != initialCw ||
+                        initialAdvertisedMax != CW_MAX_LIMIT,
+                    "AP did not advertise the configured AC_BE CW limits");
+    std::cout << "[INITIAL-CW-CONTROL] AP=" << txopAp->GetMinCw() << "/"
+              << txopAp->GetMaxCw() << " | advertisedBE="
+              << initialAdvertisedMin << "/"
+              << initialAdvertisedMax << " | STA_A="
+              << txopA->GetMinCw() << "/" << txopA->GetMaxCw()
+              << " | STA_B=" << txopB->GetMinCw() << "/"
+              << txopB->GetMaxCw() << std::endl;
 
     Ptr<WifiMacQueue> queueA =
 
@@ -3827,6 +4012,7 @@ main(int argc, char* argv[])
         CreateObject<WifiAiDcfEnv>(
             macA,
             macB,
+            macAp,
             queueA,
             queueB,
             flowMonitor);
@@ -3900,8 +4086,10 @@ main(int argc, char* argv[])
 
 
     Time totalDelay =
-
         Seconds(0);
+
+    uint64_t flow1RxPackets = 0;
+    uint64_t flow2RxPackets = 0;
 
 
 
@@ -3976,6 +4164,15 @@ main(int argc, char* argv[])
         totalDelay +=
 
             stats.delaySum;
+
+        if (tuple.sourceAddress == staInterfaces.GetAddress(0))
+        {
+            flow1RxPackets += stats.rxPackets;
+        }
+        else if (tuple.sourceAddress == staInterfaces.GetAddress(1))
+        {
+            flow2RxPackets += stats.rxPackets;
+        }
 
 
 
@@ -4136,8 +4333,11 @@ main(int argc, char* argv[])
 
 
 
-    double packetLossPercentage =
+    NS_ABORT_MSG_IF(totalRxPackets > totalTxPackets,
+                    "FlowMonitor received more packets than it transmitted");
+    totalLostPackets = totalTxPackets - totalRxPackets;
 
+    double packetLossPercentage =
         0.0;
 
 
@@ -4169,6 +4369,16 @@ main(int argc, char* argv[])
     const double aggregateThroughputMbps =
         measurementWindowSeconds > 0.0
             ? static_cast<double>(totalRxPackets) * PACKET_SIZE * 8.0 /
+                  (measurementWindowSeconds * 1000000.0)
+            : 0.0;
+    const double flow1ThroughputMbps =
+        measurementWindowSeconds > 0.0
+            ? static_cast<double>(flow1RxPackets) * PACKET_SIZE * 8.0 /
+                  (measurementWindowSeconds * 1000000.0)
+            : 0.0;
+    const double flow2ThroughputMbps =
+        measurementWindowSeconds > 0.0
+            ? static_cast<double>(flow2RxPackets) * PACKET_SIZE * 8.0 /
                   (measurementWindowSeconds * 1000000.0)
             : 0.0;
 
@@ -4316,6 +4526,9 @@ main(int argc, char* argv[])
 
         << std::endl;
 
+    std::cout << "FLOW1_THROUGHPUT_MBPS: " << flow1ThroughputMbps << std::endl;
+    std::cout << "FLOW2_THROUGHPUT_MBPS: " << flow2ThroughputMbps << std::endl;
+
 
 
     std::cout
@@ -4444,10 +4657,9 @@ main(int argc, char* argv[])
 
 
 
+    const char* resultsPath = std::getenv("WIFI_RL_RESULTS_FILE");
     std::ofstream csv(
-
-        "wifi_ai_dcf_results_v2.csv",
-
+        resultsPath ? resultsPath : "wifi_ai_dcf_results_v2.csv",
         std::ios::app);
 
 
@@ -4479,6 +4691,10 @@ main(int argc, char* argv[])
             << "packet_loss_percent,"
 
             << "aggregate_throughput_mbps,"
+
+            << "flow1_throughput_mbps,"
+
+            << "flow2_throughput_mbps,"
 
             << "average_latency_ms,"
 
@@ -4535,6 +4751,14 @@ main(int argc, char* argv[])
         << ","
 
         << aggregateThroughputMbps
+
+        << ","
+
+        << flow1ThroughputMbps
+
+        << ","
+
+        << flow2ThroughputMbps
 
         << ","
 

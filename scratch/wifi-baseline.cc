@@ -8,12 +8,14 @@
 #include "ns3/internet-module.h"
 #include "ns3/applications-module.h"
 #include "ns3/flow-monitor-module.h"
+#include "wifi-scenario-config.h"
 
 #include <fstream>
 #include <iostream>
 #include <unordered_map>
 #include <string>
 #include <cmath>
+#include <cstdlib>
 
 using namespace ns3;
 
@@ -388,12 +390,13 @@ int main(int argc, char* argv[])
 {
     uint32_t scenario = 1;
     uint32_t runNumber = 1;
+    uint32_t seed = 12345;
 
     CommandLine cmd(__FILE__);
 
     cmd.AddValue(
         "scenario",
-        "Scenario number: 1 to 5",
+        "Scenario number: 1 to 40",
         scenario);
 
     cmd.AddValue(
@@ -401,12 +404,14 @@ int main(int argc, char* argv[])
         "Random run number",
         runNumber);
 
+    cmd.AddValue("seed", "ns-3 random seed", seed);
+
     cmd.Parse(argc, argv);
 
-    if (scenario < 1 || scenario > 5)
+    if (scenario < 1 || scenario > 40)
     {
         std::cerr
-            << "Scenario must be between 1 and 5."
+            << "Scenario must be between 1 and 40."
             << std::endl;
 
         return 1;
@@ -416,7 +421,7 @@ int main(int argc, char* argv[])
     // RANDOMNESS
     // ========================================================
 
-    RngSeedManager::SetSeed(12345);
+    RngSeedManager::SetSeed(seed);
     RngSeedManager::SetRun(runNumber);
 
     // ========================================================
@@ -561,23 +566,68 @@ int main(int argc, char* argv[])
     trafficB.totalBytes = 0;
 
     // --------------------------------------------------------
-    // SCENARIO 1
-    // Sequential traffic
+    // SCENARIO 1: original scenario 5, including the later B burst
     // --------------------------------------------------------
 
     if (scenario == 1)
     {
         trafficA =
             {
-                2 * 1000 * 1000,
-                "2Mbps",
+                10 * 1000 * 1000,
+                "40Mbps",
                 1.0
             };
 
         trafficB =
             {
-                2 * 1000 * 1000,
-                "2Mbps",
+                10 * 1000 * 1000,
+                "40Mbps",
+                1.0
+            };
+
+        measurementStartTime = 1.0;
+    }
+
+    // --------------------------------------------------------
+    // SCENARIO 2: original scenario 18, high asymmetric simultaneous load
+    // --------------------------------------------------------
+
+    else if (scenario == 2)
+    {
+        trafficA =
+            {
+                40 * 1000 * 1000,
+                "40Mbps",
+                1.0
+            };
+
+        trafficB =
+            {
+                20 * 1000 * 1000,
+                "20Mbps",
+                1.0
+            };
+
+        measurementStartTime = 1.0;
+    }
+
+    // --------------------------------------------------------
+    // SCENARIO 3: original scenario 24, A-heavy with delayed B
+    // --------------------------------------------------------
+
+    else if (scenario == 3)
+    {
+        trafficA =
+            {
+                20 * 1000 * 1000,
+                "20Mbps",
+                1.0
+            };
+
+        trafficB =
+            {
+                5 * 1000 * 1000,
+                "5Mbps",
                 5.0
             };
 
@@ -585,71 +635,22 @@ int main(int argc, char* argv[])
     }
 
     // --------------------------------------------------------
-    // SCENARIO 2
-    // Simultaneous traffic
-    // --------------------------------------------------------
-
-    else if (scenario == 2)
-    {
-        trafficA =
-            {
-                5 * 1000 * 1000,
-                "10Mbps",
-                1.0
-            };
-
-        trafficB =
-            {
-                5 * 1000 * 1000,
-                "10Mbps",
-                1.0
-            };
-
-        measurementStartTime = 1.0;
-    }
-
-    // --------------------------------------------------------
-    // SCENARIO 3
-    // Sudden asymmetric load
-    // --------------------------------------------------------
-
-    else if (scenario == 3)
-    {
-        trafficA =
-            {
-                4 * 1000 * 1000,
-                "2Mbps",
-                1.0
-            };
-
-        trafficB =
-            {
-                12 * 1000 * 1000,
-                "20Mbps",
-                3.0
-            };
-
-        measurementStartTime = 1.0;
-    }
-
-    // --------------------------------------------------------
-    // SCENARIO 4
-    // Heavy simultaneous contention
+    // SCENARIO 4: new moderate simultaneous asymmetric workload
     // --------------------------------------------------------
 
     else if (scenario == 4)
     {
         trafficA =
             {
-                20 * 1000 * 1000,
-                "20Mbps",
+                15 * 1000 * 1000,
+                "15Mbps",
                 1.0
             };
 
         trafficB =
             {
-                20 * 1000 * 1000,
-                "20Mbps",
+                10 * 1000 * 1000,
+                "10Mbps",
                 1.0
             };
 
@@ -657,31 +658,25 @@ int main(int argc, char* argv[])
     }
 
     // --------------------------------------------------------
-    // SCENARIO 5
-    // Dynamic / changing traffic
-    //
-    // A starts with a moderate workload.
-    // B starts lightly, then gets another large workload later.
+    // SCENARIO 5: reduced-volume simultaneous 20 Mbps flows
     // --------------------------------------------------------
 
     else if (scenario == 5)
-{
-    trafficA =
-        {
-            50 * 1000 * 1000,
-            "40Mbps",
-            1.0
-        };
+    {
+        trafficA = {5 * 1000 * 1000, "20Mbps", 1.0};
+        trafficB = {5 * 1000 * 1000, "20Mbps", 1.0};
 
-    trafficB =
-        {
-            50 * 1000 * 1000,
-            "40Mbps",
-            1.0
-        };
+        measurementStartTime = 1.0;
+    }
 
-    measurementStartTime = 1.0;
-}
+    const auto& sharedScenario = wifi_scenario::Get(scenario);
+    trafficA = {sharedScenario.flowA.totalBytes,
+                sharedScenario.flowA.dataRate,
+                sharedScenario.flowA.startTime};
+    trafficB = {sharedScenario.flowB.totalBytes,
+                sharedScenario.flowB.dataRate,
+                sharedScenario.flowB.startTime};
+    measurementStartTime = sharedScenario.measurementStartTime;
 
     // ========================================================
     // PRINT SCENARIO INFORMATION
@@ -795,13 +790,13 @@ int main(int argc, char* argv[])
     // This creates a changing traffic condition.
     // ========================================================
 
-    if (scenario == 5)
+    if (sharedScenario.extraFlowB.totalBytes > 0)
     {
         TrafficConfig secondBurst =
             {
-                10 * 1000 * 1000,
-                "10Mbps",
-                6.0
+                sharedScenario.extraFlowB.totalBytes,
+                sharedScenario.extraFlowB.dataRate,
+                sharedScenario.extraFlowB.startTime
             };
 
         InstallTraffic(
@@ -810,10 +805,9 @@ int main(int argc, char* argv[])
             portB,
             secondBurst);
 
-        std::cout << "STA B second burst: "
-                  << "10 MB, 10Mbps, "
-                  << "1200 B packets, start 6 s"
-                  << std::endl;
+        PrintTraffic(
+            "STA B second burst",
+            secondBurst);
     }
 
     // ========================================================
@@ -997,12 +991,17 @@ int main(int argc, char* argv[])
         "STA B",
         trafficB);
 
-    if (scenario == 5)
+    if (sharedScenario.extraFlowB.totalBytes > 0)
     {
-        std::cout
-            << "STA B second burst: "
-            << "10 MB, 10Mbps, 1200 B packets, start 6 s"
-            << std::endl;
+        TrafficConfig secondBurst =
+            {
+                sharedScenario.extraFlowB.totalBytes,
+                sharedScenario.extraFlowB.dataRate,
+                sharedScenario.extraFlowB.startTime
+            };
+        PrintTraffic(
+            "STA B second burst",
+            secondBurst);
     }
 
     std::cout
@@ -1034,6 +1033,9 @@ int main(int argc, char* argv[])
 
     Time totalDelay =
         Seconds(0);
+
+    uint64_t flow1RxPackets = 0;
+    uint64_t flow2RxPackets = 0;
 
     double totalThroughputBits = 0.0;
 
@@ -1078,6 +1080,15 @@ int main(int argc, char* argv[])
 
         totalDelay +=
             stats.delaySum;
+
+        if (tuple.sourceAddress == staInterfaces.GetAddress(0))
+        {
+            flow1RxPackets += stats.rxPackets;
+        }
+        else if (tuple.sourceAddress == staInterfaces.GetAddress(1))
+        {
+            flow2RxPackets += stats.rxPackets;
+        }
 
         std::cout
             << "Flow "
@@ -1145,6 +1156,10 @@ int main(int argc, char* argv[])
     // OVERALL METRICS
     // ========================================================
 
+    NS_ABORT_MSG_IF(totalRxPackets > totalTxPackets,
+                    "FlowMonitor received more packets than it transmitted");
+    totalLostPackets = totalTxPackets - totalRxPackets;
+
     double averageLatencyMs = 0.0;
 
     if (totalRxPackets > 0)
@@ -1156,6 +1171,18 @@ int main(int argc, char* argv[])
     }
 
     double packetLossPercentage = 0.0;
+    const double measurementWindowSeconds =
+        SIMULATION_TIME - measurementStartTime;
+    const double flow1ThroughputMbps =
+        measurementWindowSeconds > 0.0
+            ? static_cast<double>(flow1RxPackets) * PACKET_SIZE * 8.0 /
+                  (measurementWindowSeconds * 1000000.0)
+            : 0.0;
+    const double flow2ThroughputMbps =
+        measurementWindowSeconds > 0.0
+            ? static_cast<double>(flow2RxPackets) * PACKET_SIZE * 8.0 /
+                  (measurementWindowSeconds * 1000000.0)
+            : 0.0;
 
     if (totalTxPackets > 0)
     {
@@ -1253,6 +1280,9 @@ int main(int argc, char* argv[])
         << " ms"
         << std::endl;
 
+    std::cout << "FLOW1_THROUGHPUT_MBPS: " << flow1ThroughputMbps << std::endl;
+    std::cout << "FLOW2_THROUGHPUT_MBPS: " << flow2ThroughputMbps << std::endl;
+
     std::cout
         << "Average queue A            : "
         << averageQueueA
@@ -1307,8 +1337,9 @@ int main(int argc, char* argv[])
     // SAVE CSV
     // ========================================================
 
+    const char* resultsPath = std::getenv("WIFI_BASELINE_RESULTS_FILE");
     std::ofstream csv(
-        "wifi_baseline_results.csv",
+        resultsPath ? resultsPath : "wifi_baseline_results.csv",
         std::ios::app);
 
     // Add header if the file is empty.

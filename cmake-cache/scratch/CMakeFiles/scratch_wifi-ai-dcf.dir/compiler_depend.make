@@ -584,6 +584,7 @@ scratch/CMakeFiles/scratch_wifi-ai-dcf.dir/wifi-ai-dcf.cc.o: /mnt/c/Users/MANJU\
   /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/ai/model/gym-interface/cpp/spaces.h \
   /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/ai/model/msg-interface/ns3-ai-msg-interface.h \
   /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/ai/model/msg-interface/ns3-ai-semaphore.h \
+  /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/wifi-scenario-config.h \
   /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/antenna/model/angles.h \
   /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/antenna/model/antenna-model.h \
   /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/antenna/model/phased-array-model.h \
@@ -2472,8 +2473,6 @@ scratch/CMakeFiles/scratch_wifi-ai-dcf.dir/wifi-ai-dcf.cc.o: /mnt/c/Users/MANJU\
 
 /usr/include/google/protobuf/stubs/status.h:
 
-/usr/include/google/protobuf/stubs/mutex.h:
-
 /usr/include/google/protobuf/stubs/logging.h:
 
 /usr/include/google/protobuf/port.h:
@@ -3800,6 +3799,10 @@ scratch/CMakeFiles/scratch_wifi-ai-dcf.dir/wifi-ai-dcf.cc.o: /mnt/c/Users/MANJU\
 
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/wifi/model/wifi-mac.h:
 
+/usr/include/boost/mpl/less.hpp:
+
+/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/wifi/model/wifi-mac-trailer.h:
+
 /usr/include/boost/units/systems/si/force.hpp:
 
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/include/ns3/wifi-net-device.h:
@@ -5034,10 +5037,6 @@ scratch/CMakeFiles/scratch_wifi-ai-dcf.dir/wifi-ai-dcf.cc.o: /mnt/c/Users/MANJU\
 
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/core/model/random-variable-stream.h:
 
-/usr/include/boost/mpl/less.hpp:
-
-/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/wifi/model/wifi-mac-trailer.h:
-
 /usr/include/x86_64-linux-gnu/c++/15/bits/ctype_inline.h:
 
 /usr/include/x86_64-linux-gnu/bits/ipctypes.h:
@@ -5804,6 +5803,14 @@ scratch/CMakeFiles/scratch_wifi-ai-dcf.dir/wifi-ai-dcf.cc.o: /mnt/c/Users/MANJU\
 
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/contrib/ai/model/msg-interface/ns3-ai-semaphore.h:
 
+/usr/include/google/protobuf/stubs/mutex.h:
+
+/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/wifi-scenario-config.h:
+
+/usr/include/boost/mpl/pop_front_fwd.hpp:
+
+/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/internet/model/arp-l3-protocol.h:
+
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/antenna/model/antenna-model.h:
 
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/wifi/model/amsdu-subframe-header.h:
@@ -6213,10 +6220,6 @@ scratch/CMakeFiles/scratch_wifi-ai-dcf.dir/wifi-ai-dcf.cc.o: /mnt/c/Users/MANJU\
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/include/ns3/fatal-error.h:
 
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/internet/model/arp-header.h:
-
-/usr/include/boost/mpl/pop_front_fwd.hpp:
-
-/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/internet/model/arp-l3-protocol.h:
 
 /usr/include/boost/units/systems/si/permeability.hpp:
 

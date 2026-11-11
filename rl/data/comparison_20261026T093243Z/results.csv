@@ -1,0 +1,4 @@
+scenario,method,run,seed,transmitted_packets,received_packets,lost_packets,packet_loss_percent,average_latency_ms,flow1_throughput_mbps,flow2_throughput_mbps
+5,DCF,1,12345,25002,24622,380,1.5198784097272218,291.789,1.32431,2.68198
+5,EDCA,1,12345,25002,24622,380,1.5198784097272218,291.791,1.32431,2.68198
+5,RL Adaptive DCF,1,12345,25002,24637,365,1.4598832093432526,273.765,1.32529,2.68344

@@ -568,6 +568,7 @@ scratch/CMakeFiles/scratch_wifi-edca.dir/wifi-edca.cc.o: /mnt/c/Users/MANJU\ L/D
   /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/include/ns3/yans-wifi-channel.h \
   /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/include/ns3/yans-wifi-helper.h \
   /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/include/ns3/yans-wifi-phy.h \
+  /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/wifi-scenario-config.h \
   /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/antenna/model/angles.h \
   /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/antenna/model/antenna-model.h \
   /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/antenna/model/phased-array-model.h \
@@ -3115,6 +3116,8 @@ scratch/CMakeFiles/scratch_wifi-edca.dir/wifi-edca.cc.o: /mnt/c/Users/MANJU\ L/D
 
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/wifi/model/wifi-protection.h:
 
+/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/wifi/model/wifi-protection-manager.h:
+
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/include/ns3/wifi-phy-state.h:
 
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/include/ns3/pcap-file-wrapper.h:
@@ -4939,6 +4942,12 @@ scratch/CMakeFiles/scratch_wifi-edca.dir/wifi-edca.cc.o: /mnt/c/Users/MANJU\ L/D
 
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/include/ns3/yans-wifi-phy.h:
 
+/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/wifi-scenario-config.h:
+
+/usr/include/boost/mpl/pop_front_fwd.hpp:
+
+/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/internet/model/arp-l3-protocol.h:
+
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/antenna/model/antenna-model.h:
 
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/wifi/model/amsdu-subframe-header.h:
@@ -5328,10 +5337,6 @@ scratch/CMakeFiles/scratch_wifi-edca.dir/wifi-edca.cc.o: /mnt/c/Users/MANJU\ L/D
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/include/ns3/fatal-error.h:
 
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/internet/model/arp-header.h:
-
-/usr/include/boost/mpl/pop_front_fwd.hpp:
-
-/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/internet/model/arp-l3-protocol.h:
 
 /usr/include/boost/units/systems/si/permeability.hpp:
 
@@ -6030,5 +6035,3 @@ scratch/CMakeFiles/scratch_wifi-edca.dir/wifi-edca.cc.o: /mnt/c/Users/MANJU\ L/D
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/build/include/ns3/vht-capabilities.h:
 
 /mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/wifi/model/wifi-ns3-constants.h:
-
-/mnt/c/Users/MANJU\ L/Downloads/ns-allinone-3.46.1/ns-3.46.1/src/wifi/model/wifi-protection-manager.h:

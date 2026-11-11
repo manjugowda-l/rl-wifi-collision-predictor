@@ -9,8 +9,11 @@ import ns3ai_gym_env
 import numpy as np
 
 from common import (
+    STATE_SCHEMA,
+    STATE_SCHEMA_V2,
     allowed_actions,
-    discretize_state,
+    action_target_cw,
+    discretize_for_schema,
     greedy_action,
     load_checkpoint,
     save_checkpoint,
@@ -18,8 +21,9 @@ from common import (
 
 TARGET = "wifi-ai-dcf"
 SCENARIOS = range(1, 41)
-MODEL_FILE = "rl/q_table_v2.json"
-DATA_ROOT = "rl/data"
+MODEL_FILE = os.environ.get("WIFI_RL_TRAIN_MODEL_FILE", "rl/q_table_v2.json")
+DATA_ROOT = os.environ.get("WIFI_RL_TRAIN_DATA_ROOT", "rl/data")
+TRAIN_SEED = int(os.environ.get("WIFI_RL_TRAIN_SEED", "98765"))
 RL_INTERVAL = 0.1
 
 ALPHA = 0.10
@@ -33,16 +37,28 @@ CSV_HEADER = [
     "episode_id", "scenario", "run", "step", "simulation_time",
     "queueA", "queueB", "queueGrowthA", "queueGrowthB",
     "packetLossBin", "macFailureBin", "latencyBin", "currentCW",
-    "action", "cwBefore", "cwAfter", "reward",
+    "action", "cwBefore", "requestedCW", "effectiveCW", "reward",
     "nextQueueA", "nextQueueB", "nextQueueGrowthA", "nextQueueGrowthB",
     "nextPacketLossBin", "nextMacFailureBin", "nextLatencyBin", "nextCW",
     "epsilon", "qBefore", "qAfter",
+    "rawQueueA", "rawQueueB", "rawQueueGrowthA", "rawQueueGrowthB",
+    "rawPacketLoss", "rawMacFailures", "rawLatencyMs",
+    "throughputMbps", "feedbackPacketLoss", "feedbackLatencyMs",
+    "feedbackMacFailures", "feedbackMacFinalFailures",
 ]
+FEEDBACK_FIELDS = (
+    "throughputMbps",
+    "packetLoss",
+    "latencyMs",
+    "macFailures",
+    "macFinalFailures",
+)
 
 
 def initialize_or_resume(scenario):
     if os.path.isfile(MODEL_FILE):
         metadata, q_table = load_checkpoint(MODEL_FILE)
+        metadata.setdefault("state_schema", STATE_SCHEMA_V2)
         next_scenario = metadata.get("next_scenario")
         if not isinstance(next_scenario, int) or next_scenario not in range(1, 42):
             raise ValueError(f"Invalid next_scenario in checkpoint {MODEL_FILE}")
@@ -68,6 +84,17 @@ def initialize_or_resume(scenario):
         "completed_scenarios": [],
         "run_dir": run_dir,
         "total_transitions": 0,
+        "state_schema": STATE_SCHEMA,
+        "reward_definition": "multi-objective-throughput-loss-latency-v3",
+        "training_config": {
+            "alpha": ALPHA,
+            "gamma": GAMMA,
+            "epsilon_start": EPSILON_START,
+            "epsilon_min": EPSILON_MIN,
+            "epsilon_decay_per_step": EPSILON_DECAY_PER_STEP,
+            "seed": TRAIN_SEED,
+            "run_policy": "run_number_equals_scenario",
+        },
     }, {}
 
 
@@ -96,7 +123,7 @@ def run_one_scenario(scenario):
         "ns3ai_gym_env/Ns3-v0",
         targetName=TARGET,
         ns3Path="./",
-        ns3Settings={"scenario": scenario, "run": run_number},
+        ns3Settings={"scenario": scenario, "run": run_number, "seed": TRAIN_SEED},
         debug=False,
     )
     rows_written = 0
@@ -104,7 +131,8 @@ def run_one_scenario(scenario):
     try:
         observation, _info = env.reset()
         raw_state = np.asarray(observation, dtype=np.float32)
-        state = discretize_state(raw_state)
+        state_schema = metadata.get("state_schema", STATE_SCHEMA_V2)
+        state = discretize_for_schema(raw_state, state_schema)
         steps = 0
 
         with open(scenario_csv, "a", newline="", encoding="utf-8") as scenario_file, \
@@ -124,12 +152,33 @@ def run_one_scenario(scenario):
                 else:
                     action_value = greedy_action(get_q_values(state), cw_before)
 
-                next_observation, reward, terminated, truncated, _next_info = env.step(
+                next_observation, reward, terminated, truncated, next_info = env.step(
                     np.asarray([action_value], dtype=np.int32)
                 )
                 next_raw_state = np.asarray(next_observation, dtype=np.float32)
-                next_state = discretize_state(next_raw_state)
+                next_state = discretize_for_schema(next_raw_state, state_schema)
                 cw_after = int(round(float(next_raw_state[6])))
+                requested_cw = action_target_cw(cw_before, action_value)
+                if cw_after != requested_cw:
+                    raise RuntimeError(
+                        f"CW action mismatch at scenario {scenario}, step {steps + 1}: "
+                        f"action {action_value} requested {requested_cw}, "
+                        f"but next observation reports {cw_after}"
+                    )
+                if not isinstance(next_info, dict):
+                    raise TypeError("ns3-ai step feedback must be a dictionary")
+                missing_feedback = [
+                    name for name in FEEDBACK_FIELDS if name not in next_info
+                ]
+                if missing_feedback:
+                    raise KeyError(
+                        f"ns3-ai step feedback is missing {missing_feedback}"
+                    )
+                feedback = {
+                    name: float(next_info[name]) for name in FEEDBACK_FIELDS
+                }
+                if not all(np.isfinite(value) for value in feedback.values()):
+                    raise ValueError("ns3-ai step feedback contains non-finite values")
                 reward = float(reward)
                 if not np.isfinite(reward) or not -1.000001 <= reward <= 1.000001:
                     raise ValueError(f"Invalid normalized reward from ns-3: {reward}")
@@ -151,11 +200,18 @@ def run_one_scenario(scenario):
 
                 row = [
                     episode_id, scenario, run_number, steps + 1,
-                    f"{steps * RL_INTERVAL:.3f}",
+                    f"{1.0 + steps * RL_INTERVAL:.3f}",
                     *state[:4], state[4], state[5], state[6], state[7],
-                    action_value, cw_before, cw_after, reward,
+                    action_value, cw_before,
+                    requested_cw,
+                    cw_after, reward,
                     *next_state[:4], next_state[4], next_state[5],
                     next_state[6], next_state[7], epsilon, q_before, q_after,
+                    *[float(value) for value in raw_state[:4]],
+                    float(raw_state[4]), float(raw_state[5]), float(raw_state[7]),
+                    feedback["throughputMbps"], feedback["packetLoss"],
+                    feedback["latencyMs"], feedback["macFailures"],
+                    feedback["macFinalFailures"],
                 ]
                 scenario_writer.writerow(row)
                 combined_writer.writerow(row)
@@ -189,7 +245,8 @@ def run_one_scenario(scenario):
     print(
         f"[DONE] Scenario {scenario}: steps={steps}, "
         f"reward_sum={total_reward:.4f}, epsilon={epsilon:.4f}, "
-        f"Q-states={len(q_table)}"
+        f"Q-states={len(q_table)}, state_schema={state_schema}, "
+        f"reward_definition={metadata.get('reward_definition', 'legacy-v2')}"
     )
     print(f"[CHECKPOINT] Safely saved {MODEL_FILE}")
 

@@ -13,6 +13,7 @@ set(OLD_GLOB
   "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/wifi-ai-dcf.cc.scenario5-backup"
   "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/wifi-baseline.cc"
   "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/wifi-edca.cc"
+  "/mnt/c/Users/MANJU L/Downloads/ns-allinone-3.46.1/ns-3.46.1/scratch/wifi-scenario-config.h"
   )
 if(NOT "${NEW_GLOB}" STREQUAL "${OLD_GLOB}")
   message("-- GLOB mismatch!")
