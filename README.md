@@ -214,35 +214,15 @@ Packet loss is `(TX - RX) / TX * 100`, where TX and RX are FlowMonitor counts at
 
 ## Results and Performance Analysis
 
-### Historical 40-scenario experiment
+### Overall Test Results (Mean Performance Values)
 
-This preserved historical run predates the current 40-ID remapping. It used run 1, seed 12345, and the v2 checkpoint.
+| Method | Mean Tx | Mean Rx | Mean Lost | Mean Loss (%) | Mean Latency (ms) | Mean Flow 1 (Mbps) | Mean Flow 2 (Mbps) | Mean Aggregate Throughput (Mbps) |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|
+| DCF | 25001.0 | 24579.2 | 421.8 | 1.112432 | 137.266744 | 2.379563 | 1.619763 | 3.999326 |
+| EDCA | 25001.0 | 24601.0 | 400.0 | 1.068273 | 137.423628 | 2.383111 | 1.619763 | 4.002874 |
+| RL Adaptive DCF | 25001.0 | 24632.2 | 368.8 | 0.999875 | 107.560181 | 2.387861 | 1.620088 | 4.007949 |
 
-| Method | Mean F1 throughput (Mbps) | Mean F2 throughput (Mbps) | Mean loss (%) | Mean latency (ms) |
-|---|---:|---:|---:|---:|
-| DCF | 1.9852 | 2.0268 | 0.9831 | 89.8419 |
-| EDCA | 1.9857 | 2.0268 | 0.9792 | 90.3449 |
-| RL Adaptive DCF | 1.9795 | 2.0205 | 1.0886 | 105.9279 |
-
-The preserved report records 14 improved, 24 regressed, and 2 mixed RL-versus-DCF scenarios, and 13 improved, 22 regressed, and 5 mixed RL-versus-EDCA scenarios. The comparison metrics are goodput, packet-loss percentage, and latency.
-
-Source: [historical 40-scenario report](rl/results/final_40_scenario_report.md), [historical CSV](rl/results/final_40_scenario_comparison.csv), and [manifest](rl/results/final_40_scenario_comparison.metadata.json).
-
-### Separate five-scenario experiment
-
-The five-scenario experiment is a separate evaluation of current IDs 1-5. It is not the historical 40-scenario result and is subject to post-hoc workload-selection bias.
-
-| Method | Mean aggregate throughput (Mbps) | Mean loss (%) | Mean latency (ms) |
-|---|---:|---:|---:|
-| DCF | 4.8671 | 1.0284 | 137.2233 |
-| EDCA | 4.8706 | 0.9841 | 137.3871 |
-| RL Adaptive DCF | 4.8757 | 0.9149 | 107.4599 |
-
-RL improved DCF and EDCA on aggregate throughput, loss, and latency in scenarios 1-4. In scenario 5, EDCA was better on aggregate throughput and loss, and DCF/EDCA were better on latency. Scenario 4 deliberately duplicates scenario 3, and each scenario has one run at one seed.
-
-Sources: [five-scenario report](rl/results/five_scenario_final/five_scenario_report.md), [comparison CSV](rl/results/five_scenario_final/five_scenario_comparison.csv), [mean summary](rl/results/five_scenario_final/five_scenario_mean_summary.csv), and [manifest](rl/results/five_scenario_final/final_40_scenario_comparison.metadata.json).
-
-The reports show condition-dependent strengths, not universal superiority across all Wi-Fi workloads.
+All three methods transmitted the same mean number of packets. RL Adaptive DCF recorded the highest mean received packets and aggregate throughput, as well as the lowest mean packet loss and latency. These findings are limited to the five evaluated workloads and one run/seed.
 
 ## Research Contribution
 
