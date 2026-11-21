@@ -1,0 +1,53 @@
+flowchart LR
+    subgraph EVAL["Evaluation and Comparison"]
+        M["Comparison scripts<br/>run_all_comparisons.py / compare_results.py"]
+        MET["Metrics<br/>Throughput | Packet loss | Latency<br/>Queue length and MAC failures"]
+        CMP["DCF vs EDCA vs RL Adaptive DCF"]
+    end
+
+    subgraph SIM["ns-3 Simulation Layer"]
+        N["Wireless network<br/>1 AP + 2 stations"]
+        T["UDP traffic flows and 40 scenario workloads"]
+        MAC["IEEE 802.11 MAC"]
+        DCF["Conventional DCF"]
+        EDCA["EDCA / QoS access categories"]
+        RLDCF["RL Adaptive DCF"]
+    end
+
+    subgraph COMM["ns3-ai Gym Communication"]
+        GYM["Ns3-v0 Gym environment"]
+        OBS["8-value observation"]
+        ACT["Action 0 / 1 / 2"]
+        RWD["Normalized interval reward"]
+    end
+
+    subgraph RL["Python Reinforcement Learning"]
+        AGENT["Greedy tabular Q-learning agent"]
+        Q["Q-table v2<br/>q_table_v2.json"]
+        STATE["Discretized state"]
+        POLICY["Decrease | Keep | Increase"]
+    end
+
+    N --> T --> MAC
+    MAC --> DCF
+    MAC --> EDCA
+    MAC --> RLDCF
+
+    RLDCF <-->|"Gym reset / step"| GYM
+    GYM -->|"observation every 100 ms"| OBS
+    OBS --> STATE --> AGENT
+    AGENT --> Q
+    Q --> AGENT
+    AGENT --> POLICY --> ACT
+    ACT --> GYM
+    GYM -->|"ExecuteActions()"| RLDCF
+    RLDCF -->|"CW = 7 / 15 / 31 / 63 / 127"| MAC
+
+    RLDCF -.->|"end-of-run statistics"| MET
+    DCF -.-> MET
+    EDCA -.-> MET
+    MET --> CMP
+    M --> CMP
+
+    RLDCF -.->|"reward components"| RWD
+    RWD --> GYM

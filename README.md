@@ -1,283 +1,268 @@
-# The Network Simulator, Version 3
+# A Reinforcement Learning-Based Approach to Optimize Network Performance in Wireless LANs
 
-[![codecov](https://codecov.io/gh/nsnam/ns-3-dev-git/branch/master/graph/badge.svg)](https://codecov.io/gh/nsnam/ns-3-dev-git/branch/master/)
-[![Gitlab CI](https://gitlab.com/nsnam/ns-3-dev/badges/master/pipeline.svg)](https://gitlab.com/nsnam/ns-3-dev/-/pipelines)
-[![Github CI](https://github.com/nsnam/ns-3-dev-git/actions/workflows/per_commit.yml/badge.svg)](https://github.com/nsnam/ns-3-dev-git/actions)
+This project uses IEEE 802.11 ns-3 simulations and tabular Q-learning to investigate adaptive contention-window control in wireless LANs. It compares conventional Distributed Coordination Function (DCF), Enhanced Distributed Channel Access (EDCA), and an RL-based Adaptive DCF that selects decrease, keep, or increase actions for the MAC contention window.
 
-[![Latest Release](https://gitlab.com/nsnam/ns-3-dev/-/badges/release.svg)](https://gitlab.com/nsnam/ns-3-dev/-/releases)
+## Overview
 
-## License
+Wireless stations contend for the shared channel using a contention window (CW). Collisions, retransmissions, queue growth, and high latency can increase as offered load or traffic asymmetry changes. Conventional backoff behavior is fixed or tied to retries, so this project investigates whether a tabular Q-learning policy can select an effective AC_BE CW under changing conditions.
 
-This software is licensed under the terms of the GNU General Public License v2.0 only (GPL-2.0-only).
-See the LICENSE file for more details.
+The ns-3 MAC remains the actual simulation implementation. A Python agent observes network state and sends a CW action through the ns3-ai Gym interface. The project compares DCF, EDCA, and RL Adaptive DCF using throughput, packet loss, end-to-end latency, queue behavior, MAC failures, and CW changes.
 
-## Table of Contents
+## Research Objectives
 
-* [Overview](#overview-an-open-source-project)
-* [Software overview](#software-overview)
-* [Getting ns-3](#getting-ns-3)
-* [Building ns-3](#building-ns-3)
-* [Testing ns-3](#testing-ns-3)
-* [Running ns-3](#running-ns-3)
-* [ns-3 Documentation](#ns-3-documentation)
-* [Working with the Development Version of ns-3](#working-with-the-development-version-of-ns-3)
-* [Contributing to ns-3](#contributing-to-ns-3)
-* [Reporting Issues](#reporting-issues)
-* [Asking Questions](#asking-questions)
-* [ns-3 App Store](#ns-3-app-store)
+- Implement and evaluate conventional IEEE 802.11 DCF.
+- Implement and evaluate EDCA-style QoS channel access.
+- Implement RL Adaptive DCF using tabular Q-learning.
+- Evaluate the methods across the repository's traffic scenarios.
+- Compare them using delivered throughput, packet loss, latency, queue statistics, MAC failures, and CW adaptation.
 
-> **NOTE**: Much more substantial information about ns-3 can be found at
-<https://www.nsnam.org>
+## System Architecture
 
-## Overview: An Open Source Project
+![System Architecture](docs/architecture.svg)
 
-ns-3 is a free open source project aiming to build a discrete-event
-network simulator targeted for simulation research and education.
-This is a collaborative project; we hope that
-the missing pieces of the models we have not yet implemented
-will be contributed by the community in an open collaboration
-process. If you would like to contribute to ns-3, please check
-the [Contributing to ns-3](#contributing-to-ns-3) section below.
+- **Simulation layer:** ns-3 creates one AP and two stations and runs DCF, EDCA, or RL Adaptive DCF.
+- **IEEE 802.11 MAC:** The RL implementation controls the AC_BE minimum CW and limits for the AP and stations while keeping CWmax at 127.
+- **ns3-ai Gym communication:** The C++ Gym environment exposes an eight-value observation and accepts action `0`, `1`, or `2` at 100 ms decision intervals.
+- **Python RL layer:** The agent discretizes the observation, looks up `rl/q_table_v2.json`, and greedily chooses decrease, keep, or increase. Ties prefer keep; unseen states keep the current CW.
+- **Evaluation layer:** Comparison scripts collect throughput, packet loss, latency, queue, and MAC statistics and produce reports.
 
-This README excerpts some details from a more extensive
-tutorial that is maintained at:
-<https://www.nsnam.org/documentation/latest/>
+## Methodology
 
-## Software overview
+### State Representation
 
-From a software perspective, ns-3 consists of a number of C++
-libraries organized around different topics and technologies.
-Programs that actually run simulations can be written in
-either C++ or Python; the use of Python is enabled by
-[runtime C++/Python bindings](https://cppyy.readthedocs.io/en/latest/).  Simulation programs will
-typically link or import the ns `core` library and any additional
-libraries that they need.  ns-3 requires a modern C++ compiler
-installation (g++ or clang++) and the [CMake](https://cmake.org) build system.
-Most ns-3 programs are single-threaded; there is some limited
-support for parallelization using the [MPI](https://www.nsnam.org/docs/models/html/distributed.html) framework.
-ns-3 can also run in a real-time emulation mode by binding to an
-Ethernet device on the host machine and generating and consuming
-packets on an actual network.  The ns-3 APIs are documented
-using [Doxygen](https://www.doxygen.nl).
+The selected `rl/q_table_v2.json` uses the `queue-growth-loss-mac-latency-cw-v2` schema. The eight-value observation is:
 
-The code for the framework and the default models provided
-by ns-3 is built as a set of libraries. The libraries maintained
-by the open source project can be found in the `src` directory.
-Users may extend ns-3 by adding libraries to the build;
-third-party libraries can be found on the [ns-3 App Store](https://www.nsnam.org)
-or elsewhere in public Git repositories, and are usually added to the `contrib` directory.
+1. Queue length, station A
+2. Queue length, station B
+3. Queue growth, station A
+4. Queue growth, station B
+5. Cumulative end-to-end packet-loss fraction
+6. MAC failure count
+7. Selected CW
+8. Recent interval latency in milliseconds
 
-## Getting ns-3
+The Python encoder discretizes queues, queue growth, loss, MAC failures, latency, and CW. Valid CW values are `7, 15, 31, 63, 127`.
 
-ns-3 can be obtained by either downloading a released source
-archive, or by cloning the project's
-[Git repository](https://gitlab.com/nsnam/ns-3-dev.git).
+### Actions
 
-Starting with ns-3 release version 3.45, there are two versions
-of source archives that are published with each release:
+| Action | Meaning | CW transition |
+|---:|---|---|
+| 0 | Decrease | Previous valid CW; unavailable at CW 7 |
+| 1 | Keep | Retain current CW |
+| 2 | Increase | Next valid CW; unavailable at CW 127 |
 
-1. ns-3.##.tar.bz2
-1. ns-allinone-3.##.tar.bz2
+The C++ environment updates the AP and stations' AC_BE limits and verifies the resulting values after every action.
 
-The first archive is simply a compressed archive of the same code
-that one can obtain by checking out the release tagged code from
-the ns-3-dev Git repository.  The second archive consists of
-ns-3 plus additional contributed modules that are maintained outside
-of the main ns-3 open source project but that have been reviewed
-by maintainers and lightly tested for compatibility with the
-release.  The contributed modules included in the `allinone` release
-will change over time as new third-party libraries emerge while others
-may lose compatibility with the ns-3 mainline (e.g., if they become
-unmaintained).
+### Reward and Learning
 
-## Building ns-3
+Every 100 ms, the C++ environment computes a bounded reward:
 
-As mentioned above, ns-3 uses the CMake build system, but
-the project maintains a customized wrapper around CMake
-called the `ns3` tool.  This tool provides a
-[Waf-like](https://waf.io) API
-to the underlying CMake build manager.
-To build the set of default libraries and the example
-programs included in this package, you need to use the
-`ns3` tool. This tool provides a Waf-like API to the
-underlying CMake build manager.
-Detailed information on how to use `ns3` is included in the
-[quick start guide](doc/installation/source/quick-start.rst).
+`0.40 * throughput - 0.20 * cumulative loss - 0.20 * latency - 0.10 * queue pressure - 0.05 * positive queue growth - 0.05 * MAC retry failure ratio`
 
-Before building ns-3, you must configure it.
-This step allows the configuration of the build options,
-such as whether to enable the examples, tests and more.
+Throughput, loss, latency, queue, growth, and retry components are normalized and clipped. End-to-end packet loss and MAC retry failures are measured separately.
 
-To configure ns-3 with examples and tests enabled,
-run the following command on the ns-3 main directory:
+Evaluation is greedy and does not retrain or modify the checkpoint. The preserved v2 checkpoint is loaded by the current scripts. Its exact historical training source and reward revision are not established from the checkpoint metadata alone; see [the final training record](rl/FINAL_TRAINING_RECORD.md).
 
-```shell
-./ns3 configure --enable-examples --enable-tests
+## Technologies Used
+
+| Technology | Project use |
+|---|---|
+| C++ | ns-3 simulations and Gym environment |
+| Python | State encoding, Q-table policy, evaluation and comparison |
+| ns-3 3.46.1 | Wireless network simulation |
+| IEEE 802.11 DCF/EDCA | MAC access methods |
+| ns3-ai Gym | C++/Python communication |
+| Tabular Q-learning | Adaptive CW policy |
+| CMake / ns3 CLI | Build and run targets |
+| NumPy, Gymnasium, Protocol Buffers, psutil | Python dependencies and bindings |
+
+## Repository Structure
+
+```text
+scratch/
+  wifi-baseline.cc          Conventional DCF implementation
+  wifi-edca.cc              EDCA implementation
+  wifi-ai-dcf.cc            RL Adaptive DCF and Gym environment
+  wifi-scenario-config.h    40 current workload definitions
+
+rl/
+  agent.py                  Q-learning entry point
+  common.py                 State, action, and checkpoint helpers
+  evaluate.py               Standalone greedy RL evaluation
+  run_all_comparisons.py    Matched DCF/EDCA/RL runner
+  compare_results.py        CSV/log comparison utility
+  finalize_five_scenario_comparison.py
+  q_table_v2.json           Selected completed checkpoint
+  results/                  Preserved reports, CSV files, and charts
+  data/                     Preserved training/evaluation artifacts
+  FINAL_TRAINING_RECORD.md  Checkpoint provenance and reproduction record
+
+docs/
+  architecture.mmd          Editable Mermaid architecture source
+  architecture.svg          Rendered architecture diagram
 ```
 
-Then, build ns-3 by running the following command:
+## Installation and Setup
 
-```shell
-./ns3 build
+### Ubuntu / WSL
+
+The project is configured for Linux or WSL. From the ns-3 repository root:
+
+```bash
+sudo apt update
+sudo apt install -y build-essential cmake ninja-build \
+  libboost-all-dev libprotobuf-dev protobuf-compiler pybind11-dev
+
+python3 -m venv .venv
+.venv/bin/python -m pip install --upgrade pip
+.venv/bin/python -m pip install -e contrib/ai/python_utils
+.venv/bin/python -m pip install -e contrib/ai/model/gym-interface/py
 ```
 
-By default, the build artifacts will be stored in the `build/` directory.
+Configure ns-3 using the same virtual environment Python:
 
-### Supported Platforms
-
-The current codebase is expected to build and run on the
-set of platforms listed in the [release notes](RELEASE_NOTES.md)
-file.
-
-Other platforms may or may not work: we welcome patches to
-improve the portability of the code to these other platforms.
-
-## Testing ns-3
-
-ns-3 contains test suites to validate the models and detect regressions.
-To run the test suite, run the following command on the ns-3 main directory:
-
-```shell
-./test.py
+```bash
+PYTHON=$(.venv/bin/python -c 'import sys; print(sys.executable)')
+./ns3 configure --enable-examples -- -DPython_EXECUTABLE="$PYTHON" \
+  -DPython3_EXECUTABLE="$PYTHON"
 ```
 
-More information about ns-3 tests is available in the
-[test framework](doc/manual/source/test-framework.rst) section of the manual.
+The Python installs provide psutil, NumPy, Gymnasium, and Protocol Buffer bindings required by ns3-ai.
 
-## Running ns-3
+### Windows PowerShell
 
-On recent Linux systems, once you have built ns-3 (with examples
-enabled), it should be easy to run the sample programs with the
-following command, such as:
+Run the ns-3 build and Python processes inside WSL:
 
-```shell
-./ns3 run simple-global-routing
+```powershell
+wsl
+cd /mnt/c/Users/<USER>/Downloads/ns-allinone-3.46.1/ns-3.46.1
 ```
 
-That program should generate a `simple-global-routing.tr` text
-trace file and a set of `simple-global-routing-xx-xx.pcap` binary
-PCAP trace files, which can be read by `tcpdump -n -tt -r filename.pcap`.
-The program source can be found in the `examples/routing` directory.
+Do not use Windows Python for the C++/ns3-ai shared process.
 
-## Running ns-3 from Python
+## Build Instructions
 
-If you do not plan to modify ns-3 upstream modules, you can get
-a pre-built version of the ns-3 python bindings. It is recommended
-to create a python virtual environment to isolate different application
-packages from system-wide packages (installable via the OS package managers).
+Build all project targets:
 
-```shell
-python3 -m venv ns3env
-source ./ns3env/bin/activate
-pip install ns3
+```bash
+./ns3 build wifi-baseline wifi-edca wifi-ai-dcf
 ```
 
-If you do not have `pip`, check their documents
-on [how to install it](https://pip.pypa.io/en/stable/installation/).
+Build an individual target:
 
-After installing the `ns3` package, you can then create your simulation python script.
-Below is a trivial demo script to get you started.
-
-```python
-from ns import ns
-
-ns.LogComponentEnable("Simulator", ns.LOG_LEVEL_ALL)
-
-ns.Simulator.Stop(ns.Seconds(10))
-ns.Simulator.Run()
-ns.Simulator.Destroy()
+```bash
+./ns3 build wifi-baseline
+./ns3 build wifi-edca
+./ns3 build wifi-ai-dcf
 ```
 
-The simulation will take a while to start, while the bindings are loaded.
-The script above will print the logging messages for the called commands.
+## Running the Simulations
 
-Use `help(ns)` to check the prototypes for all functions defined in the
-ns3 namespace. To get more useful results, query specific classes of
-interest and their functions e.g., `help(ns.Simulator)`.
+The project executables accept `--scenario`, `--run`, and `--seed`.
 
-Smart pointers `Ptr<>` can be differentiated from objects by checking if
-`__deref__` is listed in `dir(variable)`. To dereference the pointer,
-use `variable.__deref__()`.
+### DCF
 
-Most ns-3 simulations are written in C++ and the documentation is
-oriented towards C++ users. The ns-3 tutorial programs (`first.cc`,
-`second.cc`, etc.) have Python equivalents, if you are looking for
-some initial guidance on how to use the Python API. The Python
-API may not be as full-featured as the C++ API, and an API guide
-for what C++ APIs are supported or not from Python do not currently exist.
-The project is looking for additional Python maintainers to improve
-the support for future Python users.
-
-## ns-3 Documentation
-
-Once you have verified that your build of ns-3 works by running
-the `simple-global-routing` example as outlined in the [running ns-3](#running-ns-3)
-section, it is quite likely that you will want to get started on reading
-some ns-3 documentation.
-
-All of that documentation should always be available from
-the ns-3 website: <https://www.nsnam.org/documentation/>.
-
-This documentation includes:
-
-* a tutorial
-* a reference manual
-* models in the ns-3 model library
-* a wiki for user-contributed tips: <https://www.nsnam.org/wiki/>
-* API documentation generated using doxygen: this is
-  a reference manual, most likely not very well suited
-  as introductory text:
-  <https://www.nsnam.org/doxygen/index.html>
-
-## Working with the Development Version of ns-3
-
-If you want to download and use the development version of ns-3, you
-need to use the tool `git`. A quick and dirty cheat sheet is included
-in the manual, but reading through the Git
-tutorials found in the Internet is usually a good idea if you are not
-familiar with it.
-
-If you have successfully installed Git, you can get
-a copy of the development version with the following command:
-
-```shell
-git clone https://gitlab.com/nsnam/ns-3-dev.git
+```bash
+./ns3 run "wifi-baseline --scenario=1 --run=1 --seed=12345"
 ```
 
-However, we recommend to follow the GitLab guidelines for starters,
-that includes creating a GitLab account, forking the ns-3-dev project
-under the new account's name, and then cloning the forked repository.
-You can find more information in the [manual](https://www.nsnam.org/docs/manual/html/working-with-git.html).
+### EDCA
 
-## Contributing to ns-3
+```bash
+./ns3 run "wifi-edca --scenario=1 --run=1 --seed=12345"
+```
 
-The process of contributing to the ns-3 project varies with
-the people involved, the amount of time they can invest
-and the type of model they want to work on, but the current
-process that the project tries to follow is described in the
-[contributing code](https://www.nsnam.org/developers/contributing-code/)
-website and in the [CONTRIBUTING.md](CONTRIBUTING.md) file.
+### RL Adaptive DCF
 
-## Reporting Issues
+Set the ns3-ai Python path and run greedy Gym evaluation:
 
-If you would like to report an issue, you can open a new issue in the
-[GitLab issue tracker](https://gitlab.com/nsnam/ns-3-dev/-/issues).
-Before creating a new issue, please check if the problem that you are facing
-was already reported and contribute to the discussion, if necessary.
+```bash
+export PYTHONPATH="contrib/ai/model/gym-interface/py:contrib/ai/python_utils"
+./.venv/bin/python rl/evaluate.py
+```
 
-## Asking Questions
+By default this evaluates scenarios 1-40 with run 1, seed 12345, and `rl/q_table_v2.json`.
 
-ns-3 has an official [ns-3-users message board](https://groups.google.com/g/ns-3-users)
-where the community asks questions and share helpful advice.
-Additionally, ns-3 has the [ns-3 Zulip chat](https://ns-3.zulipchat.com/), used to discuss
-development issues and questions among maintainers and the community.
+For a matched DCF/EDCA/RL comparison:
 
-Please use the above resources to ask questions about ns-3, rather than creating issues.
+```bash
+export PYTHONPATH="contrib/ai/model/gym-interface/py:contrib/ai/python_utils"
+OUT_DIR="rl/results/current_comparison_$(date -u +%Y%m%dT%H%M%SZ)"
+./.venv/bin/python rl/run_all_comparisons.py \
+  --scenarios 1,2,3,4,5 \
+  --run 1 \
+  --seed 12345 \
+  --checkpoint rl/q_table_v2.json \
+  --output-dir "$OUT_DIR"
+```
 
-## ns-3 App Store
+Use `--scenarios all` for current IDs 1-40. Always use a unique output directory for fresh comparisons.
 
-The official [ns-3 App Store](https://apps.nsnam.org/) is a centralized directory
-listing third-party modules for ns-3 available on the Internet.
+## Experimental Evaluation
 
-More information on how to submit an ns-3 module to the ns-3 App Store is available
-in the [ns-3 App Store documentation](https://www.nsnam.org/docs/contributing/html/external.html).
+- **Simulation duration:** 60 seconds.
+- **Measurement window:** 1-60 seconds, 59 seconds.
+- **Packet payload:** 1200 bytes.
+- **Network:** 1 AP and 2 stations.
+- **Default run:** 1.
+- **Default seed:** 12345.
+- **RL decision interval:** 100 ms.
+- **Scenario table:** [scratch/wifi-scenario-config.h](scratch/wifi-scenario-config.h).
+- **Selected checkpoint:** [rl/q_table_v2.json](rl/q_table_v2.json).
+
+Packet loss is `(TX - RX) / TX * 100`, where TX and RX are FlowMonitor counts at simulation stop. Packets still in flight at stop are counted as lost. Latency is accumulated end-to-end delay divided by received packets. Goodput is delivered 1200-byte application payload over 59 seconds.
+
+## Results and Performance Analysis
+
+### Historical 40-scenario experiment
+
+This preserved historical run predates the current 40-ID remapping. It used run 1, seed 12345, and the v2 checkpoint.
+
+| Method | Mean F1 throughput (Mbps) | Mean F2 throughput (Mbps) | Mean loss (%) | Mean latency (ms) |
+|---|---:|---:|---:|---:|
+| DCF | 1.9852 | 2.0268 | 0.9831 | 89.8419 |
+| EDCA | 1.9857 | 2.0268 | 0.9792 | 90.3449 |
+| RL Adaptive DCF | 1.9795 | 2.0205 | 1.0886 | 105.9279 |
+
+The preserved report records 14 improved, 24 regressed, and 2 mixed RL-versus-DCF scenarios, and 13 improved, 22 regressed, and 5 mixed RL-versus-EDCA scenarios. The comparison metrics are goodput, packet-loss percentage, and latency.
+
+Source: [historical 40-scenario report](rl/results/final_40_scenario_report.md), [historical CSV](rl/results/final_40_scenario_comparison.csv), and [manifest](rl/results/final_40_scenario_comparison.metadata.json).
+
+### Separate five-scenario experiment
+
+The five-scenario experiment is a separate evaluation of current IDs 1-5. It is not the historical 40-scenario result and is subject to post-hoc workload-selection bias.
+
+| Method | Mean aggregate throughput (Mbps) | Mean loss (%) | Mean latency (ms) |
+|---|---:|---:|---:|
+| DCF | 4.8671 | 1.0284 | 137.2233 |
+| EDCA | 4.8706 | 0.9841 | 137.3871 |
+| RL Adaptive DCF | 4.8757 | 0.9149 | 107.4599 |
+
+RL improved DCF and EDCA on aggregate throughput, loss, and latency in scenarios 1-4. In scenario 5, EDCA was better on aggregate throughput and loss, and DCF/EDCA were better on latency. Scenario 4 deliberately duplicates scenario 3, and each scenario has one run at one seed.
+
+Sources: [five-scenario report](rl/results/five_scenario_final/five_scenario_report.md), [comparison CSV](rl/results/five_scenario_final/five_scenario_comparison.csv), [mean summary](rl/results/five_scenario_final/five_scenario_mean_summary.csv), and [manifest](rl/results/five_scenario_final/final_40_scenario_comparison.metadata.json).
+
+The reports show condition-dependent strengths, not universal superiority across all Wi-Fi workloads.
+
+## Research Contribution
+
+The project contributes an end-to-end implementation and evaluation of tabular Q-learning for runtime adaptive contention-window control in an IEEE 802.11 ns-3 simulation. It combines real MAC observations, Gym-based Python/ns-3 communication, a discretized Q-table policy, CW verification, and matched DCF/EDCA/RL comparisons.
+
+## Future Scope
+
+- Repeat experiments across multiple seeds and runs with confidence intervals.
+- Evaluate larger station populations and mobility/channel variation.
+- Compare additional CW discretizations and reward weightings.
+- Add explicit train/evaluation separation.
+- Investigate per-station or per-access-category policies.
+- Validate across a broader workload distribution.
+
+These are future research extensions, not implemented functionality.
+
+## References
+
+- IEEE Standards Association, [IEEE 802.11 Local and Metropolitan Area Networks](https://www.ieee802.org/11/)
+- ns-3 Project, [ns-3 Documentation](https://www.nsnam.org/documentation/)
+- Huazhong University of Science and Technology, [ns3-ai](https://github.com/hust-diangroup/ns3-ai)
+- Gymnasium, [Gymnasium documentation](https://gymnasium.farama.org/)
+- Sutton and Barto, *Reinforcement Learning: An Introduction*, 2nd edition, MIT Press.
