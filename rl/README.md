@@ -1,11 +1,14 @@
 # Wi-Fi DCF comparison experiment
 
-With the repository virtualenv and ns3-ai Gym bindings installed, run the full
-40-scenario comparison from the repository root:
+With the repository virtualenv and ns3-ai Gym bindings installed, run a fresh
+40-scenario comparison from the repository root. Use a new output directory so
+the preserved historical results are not reused or overwritten:
 
 ```sh
+OUT_DIR="rl/results/current_40_scenario_$(date -u +%Y%m%dT%H%M%SZ)"
 PYTHONPATH="contrib/ai/model/gym-interface/py:contrib/ai/python_utils${PYTHONPATH:+:$PYTHONPATH}" \
-  ./.venv/bin/python rl/run_all_comparisons.py --scenarios all --run 1
+  ./.venv/bin/python rl/run_all_comparisons.py --scenarios all --run 1 \
+  --seed 12345 --checkpoint rl/q_table_v2.json --output-dir "$OUT_DIR"
 ```
 
 See [the ns3-ai installation guide](../contrib/ai/docs/install.md) for setting
@@ -19,8 +22,8 @@ python3 -m pip install psutil
 The runner uses the completed, preserved `q_table_v2.json` for greedy RL
 evaluation. It never trains or writes to a checkpoint. It checks the three
 simulator executables for `--seed` support and builds the required targets only
-if an executable is missing or stale. The final files are written to
-`rl/results/`:
+if an executable is missing or stale. The final files are written to the
+selected output directory:
 
 - `final_40_scenario_comparison.csv`: 120 rows, one per scenario and method.
 - `final_40_scenario_mean_summary.csv`: unweighted arithmetic means across the
@@ -68,20 +71,24 @@ scenarios separately.
 
 ## Workload and randomness
 
-`scratch/wifi-scenario-config.h` is the common workload table. It defines the
-two station-to-AP flows, packet totals, rates, and start times for scenarios
-1-40; scenario 5 also includes its additional 10 MB B flow at 10 Mbps starting
-at 6 seconds. The existing reference applications and EDCA packet-tagging
-application schedule packets differently internally, but use these same offered
-bytes, configured rates, packet sizes, destinations, and starts. All methods
-use two stations, one AP, 1200-byte application packets, the same 60-second
-simulation, seed, run number, PHY, and positions. The DCF/RL non-QoS settings
-and EDCA QoS settings intentionally differ at the MAC layer.
+`scratch/wifi-scenario-config.h` is the current common workload table. Current
+scenario IDs 1-3 map to historical scenarios 5, 18, and 24; IDs 4-5 are new
+workloads, and the remaining IDs use the table entries in that file. The
+preserved historical 40-scenario comparison predates this remapping. A fresh
+`--scenarios all` run uses the current table and is not a reproduction of those
+historical rows. The final five-scenario comparison uses the current IDs 1-5.
+The existing reference applications and EDCA packet-tagging application
+schedule packets differently internally, but use the same offered bytes,
+configured rates, packet sizes, destinations, and starts for each current ID.
+All methods use two stations, one AP, 1200-byte application packets, the same
+60-second simulation, seed, run number, PHY, and positions. The DCF/RL non-QoS
+settings and EDCA QoS settings intentionally differ at the MAC layer.
 
-The 40 scenarios cover offered-load levels, asymmetric station loads, staggered
-starts, and the additional scenario-5 burst; they are a bounded diagnostic
-matrix, not an exhaustive representation of all Wi-Fi deployments. No scenario
-is removed or replaced by the comparison runner.
+The current 40 IDs cover the selected historical workloads, two new workloads,
+offered-load levels, asymmetric station loads, and staggered starts; they are a
+bounded diagnostic matrix, not an exhaustive representation of all Wi-Fi
+deployments. The historical comparison outputs remain preserved as original
+results.
 
 For corresponding runs, ns-3 uses the requested seed and run number. EDCA
 category assignment is reproducible from the seed, run, scenario, and station
@@ -95,8 +102,8 @@ is FlowMonitor's accumulated end-to-end delay divided by received packets and
 is unavailable when no packets arrive. Per-flow goodput is the delivered
 1200-byte application payload times eight, divided by the common 59-second
 measurement window (from 1 second through the 60-second simulation stop).
-Flow 1 is station A and Flow 2 is station B; the additional scenario 5 B flow
-is included in Flow 2.
+Flow 1 is station A and Flow 2 is station B; the additional B burst is in
+current scenario 1.
 
 Here TX and RX are FlowMonitor's packets transmitted and received through the
 simulation stop. Therefore packets still in flight at stop are included in
@@ -112,11 +119,12 @@ differ.
 
 ## RL policy and reward note
 
-Evaluation selects the state encoder from the checkpoint schema, supports both
-the preserved v2 checkpoint and new v3 checkpoints, and uses the same three
-actions and CW boundary mask. Evaluation is greedy (epsilon is not used), with
-ties preferring keep. Unseen states therefore keep the current CW when all
-action values are zero. The comparison runner never starts training.
+Evaluation selects the state encoder from the checkpoint schema and supports
+the v2 and v3 schemas. The selected checkpoint in this working tree is v2.
+Evaluation uses the same three actions and CW boundary mask. It is greedy
+(epsilon is not used), with ties preferring keep. Unseen states therefore keep
+the current CW when all action values are zero. The comparison runner never
+starts training.
 
 Each RL action sets the AP's AC_BE contention window and its advertised AC_BE
 CW limits, as well as both stations' effective AC_BE limits. The simulator
@@ -133,17 +141,9 @@ failure ratio` (each component is normalized and clipped in the simulator).
 The cumulative loss fraction avoids treating FlowMonitor's delayed loss
 notifications as losses from the same interval's transmissions.
 
-The preserved `q_table_v2.json` remains unchanged and is evaluated with its
+The selected `q_table_v2.json` remains unchanged and is evaluated with its
 original v2 state encoder. Its action transitions predate the effective AP
 advertisement fix, and the checkpoint does not establish that it was trained
-with the current reward. The separate v3 checkpoint and training data are also
-preserved; that v3 checkpoint is partial and is not used by the full comparison.
-For a future isolated/resumable v3 candidate run without replacing v2, set
-separate model/data paths:
-
-```sh
-WIFI_RL_TRAIN_MODEL_FILE=rl/q_table_v3.json \
-WIFI_RL_TRAIN_DATA_ROOT=rl/data/training_v3 \
-WIFI_RL_TRAIN_SEED=98765 \
-python3 rl/agent.py
-```
+with the current reward. The incomplete v3 experiment (scenarios 1-19
+completed, scenario 20 partial) was removed from the working tree after backup
+to `rl/cleanup_backup_v3_20261111.zip`; it is not the final checkpoint.

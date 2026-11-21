@@ -1,4 +1,0 @@
-method,scenario_count,completed_runs,mean_transmitted_packets,mean_received_packets,mean_lost_packets,mean_packet_loss_percent,mean_average_latency_ms,mean_flow1_throughput_mbps,mean_flow2_throughput_mbps,mean_aggregate_throughput_mbps
-DCF,5,5,33334.2,32486.0,848.2,1.8713213347275026,197.5715922,2.7537684,2.5320884,5.2858567999999995
-EDCA,5,5,33334.2,32507.6,826.6,1.8281221987102227,197.7364146,2.7572824000000002,2.5320884,5.2893708
-RL Adaptive DCF,5,5,33334.2,32431.4,902.8,1.9739643173298866,218.7093604,2.7491464,2.527825,5.2769714
