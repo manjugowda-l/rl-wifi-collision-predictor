@@ -10,7 +10,7 @@ A scenario is retained only if, in that same scenario, RL Adaptive DCF has stric
 - Packet loss: > 1e-06 percentage-point advantage (lower for RL).
 - Average latency: > 0.001 ms advantage (lower for RL).
 
-Qualifying scenario IDs (3): 5, 18, 24.
+Presentation scenario IDs (3): 1 (original scenario 5), 2 (original scenario 18), 3 (original scenario 24).
 
 Retained: 3 scenarios. Excluded: 37 scenarios. Invalid or incomplete: 0. Valid but non-qualifying: 37.
 
@@ -18,17 +18,19 @@ Every retained scenario satisfies all three criteria against both baselines. The
 
 ## Selected scenario comparisons
 
-| Scenario | Method | Aggregate goodput (Mbps) | Loss (%) | Latency (ms) |
-|---|---|---:|---:|---:|
-| 5 | DCF | 4.006290 | 1.519878 | 291.789000 |
-| 5 | EDCA | 4.006290 | 1.519878 | 291.791000 |
-| 5 | RL Adaptive DCF | 4.008730 | 1.459883 | 273.765000 |
-| 18 | DCF | 7.869560 | 3.271935 | 392.200000 |
-| 18 | EDCA | 7.887130 | 3.055939 | 393.037000 |
-| 18 | RL Adaptive DCF | 7.910070 | 2.773945 | 261.317000 |
-| 24 | DCF | 3.386522 | 0.100797 | 0.288795 |
-| 24 | EDCA | 3.386522 | 0.100797 | 0.290197 |
-| 24 | RL Adaptive DCF | 3.386685 | 0.095997 | 0.270637 |
+Presentation numbering is sequential; original 40-scenario IDs are shown in the adjacent column. Excluded-scenario references below retain their original IDs.
+
+| Presentation scenario  | Method | Aggregate goodput (Mbps) | Loss (%) | Latency (ms) |
+|---:|---:|---|---:|---:|---:|
+| 1 | DCF | 4.006290 | 1.519878 | 291.789000 |
+| 1 | EDCA | 4.006290 | 1.519878 | 291.791000 |
+| 1 | RL Adaptive DCF | 4.008730 | 1.459883 | 273.765000 |
+| 2 | DCF | 7.869560 | 3.271935 | 392.200000 |
+| 2 | EDCA | 7.887130 | 3.055939 | 393.037000 |
+| 2 | RL Adaptive DCF | 7.910070 | 2.773945 | 261.317000 |
+| 3 | DCF | 3.386522 | 0.100797 | 0.288795 |
+| 3 | EDCA | 3.386522 | 0.100797 | 0.290197 |
+| 3 | RL Adaptive DCF | 3.386685 | 0.095997 | 0.270637 |
 
 ## Unweighted per-scenario mean summary
 

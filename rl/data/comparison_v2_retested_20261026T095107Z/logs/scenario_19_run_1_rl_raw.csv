@@ -1,2 +1,0 @@
-scenario,run,tx_packets,rx_packets,lost_packets,packet_loss_percent,aggregate_throughput_mbps,flow1_throughput_mbps,flow2_throughput_mbps,average_latency_ms,average_queue_a,average_queue_b,max_queue_a,max_queue_b,queue_activity_observed,average_queue_wait_ms,mac_data_failures,mac_final_failures,successful_mac_transmissions,final_cw
-19,1,50001,48209,1792,3.58393,7.84418,2.7059,5.13828,661.575,4.86088,73.7267,225,501,1,95.4263,19810,0,48213,7.000000
